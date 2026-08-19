@@ -1,30 +1,128 @@
 /**
- * Any CSS included here will be global. The classic template
- * bundles Infima by default. Infima is a CSS framework designed to
- * work well for content-centric websites.
+ * Graphene brand: dark-tech, geometric, one violet accent — the style
+ * of the mark (near-black ground, white hexagon ring, #7c6cf8 bond).
+ * The navbar stays dark in BOTH color modes: it is the brand block the
+ * logo lives on.
  */
 
-/* You can override the default Infima variables here. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
+
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
-  --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  /* violet bond, darkened for contrast on white */
+  --ifm-color-primary: #5646d6;
+  --ifm-color-primary-dark: #4635cf;
+  --ifm-color-primary-darker: #3f2fc6;
+  --ifm-color-primary-darkest: #3427a3;
+  --ifm-color-primary-light: #6657da;
+  --ifm-color-primary-lighter: #6f60dc;
+  --ifm-color-primary-lightest: #8a7de3;
+
+  --graphene-ink: #0b0b12;
+  --graphene-accent: #7c6cf8;
+
+  --ifm-font-family-base: 'Inter', system-ui, -apple-system, 'Segoe UI',
+    Roboto, Helvetica, Arial, sans-serif;
+  --ifm-font-family-monospace: 'JetBrains Mono', ui-monospace, SFMono-Regular,
+    Menlo, Consolas, monospace;
+  --ifm-heading-font-family: 'JetBrains Mono', var(--ifm-font-family-monospace);
+  --ifm-heading-font-weight: 600;
+
+  --ifm-code-font-size: 90%;
+  --ifm-code-border-radius: 6px;
+  --ifm-global-radius: 8px;
+  --docusaurus-highlighted-code-line-bg: rgba(124, 108, 248, 0.12);
+
+  /* the always-dark navbar */
+  --ifm-navbar-background-color: var(--graphene-ink);
+  --ifm-navbar-link-color: #c9c9d6;
+  --ifm-navbar-link-hover-color: #ffffff;
+  --ifm-navbar-shadow: inset 0 -1px 0 rgba(124, 108, 248, 0.25);
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  /* the bond itself, readable on near-black */
+  --ifm-color-primary: #8b7cf8;
+  --ifm-color-primary-dark: #7361f6;
+  --ifm-color-primary-darker: #6753f5;
+  --ifm-color-primary-darkest: #4229f2;
+  --ifm-color-primary-light: #a397fa;
+  --ifm-color-primary-lighter: #afa5fb;
+  --ifm-color-primary-lightest: #d5cffd;
+
+  --ifm-background-color: #0b0b12;
+  --ifm-background-surface-color: #12121c;
+  --ifm-code-background: #171722;
+  --ifm-toc-border-color: #23232f;
+  --docusaurus-highlighted-code-line-bg: rgba(124, 108, 248, 0.16);
+}
+
+/* ---- navbar: the brand block, dark in both modes ---- */
+
+.navbar {
+  background-color: var(--graphene-ink);
+}
+
+.navbar__title {
+  font-family: 'JetBrains Mono', var(--ifm-font-family-monospace);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #f4f4f8;
+}
+
+.navbar__logo {
+  height: 2.4rem;
+  margin-right: 0.65rem;
+}
+
+.navbar__link,
+.navbar .clean-btn {
+  color: var(--ifm-navbar-link-color);
+}
+
+.navbar__link--active,
+.navbar__link:hover,
+.navbar .clean-btn:hover {
+  color: #ffffff;
+}
+
+/* hamburger / color-mode icons on the dark navbar in light mode */
+[data-theme='light'] .navbar .navbar__toggle,
+[data-theme='light'] .navbar [class*='colorModeToggle'] button,
+[data-theme='light'] .navbar [class*='toggleButton'] {
+  color: #c9c9d6;
+}
+
+/* the mobile sidebar inherits the navbar brand block */
+.navbar-sidebar {
+  background-color: var(--graphene-ink);
+}
+.navbar-sidebar .menu__link {
+  color: #c9c9d6;
+}
+.navbar-sidebar .menu__link:hover,
+.navbar-sidebar .menu__link--active {
+  color: #ffffff;
+}
+
+/* ---- headings carry the geometric face ---- */
+
+h1,
+h2 {
+  letter-spacing: -0.015em;
+}
+
+/* ---- the hexagon motif, quietly: sidebar active bond ---- */
+
+.menu__link--active:not(.menu__link--sublist) {
+  border-left: 2px solid var(--ifm-color-primary);
+  border-radius: 0 var(--ifm-global-radius) var(--ifm-global-radius) 0;
+}
+
+/* ---- footer matches the ink ---- */
+
+.footer--dark {
+  --ifm-footer-background-color: var(--graphene-ink);
+  box-shadow: inset 0 1px 0 rgba(124, 108, 248, 0.25);
 }

@@ -5,10 +5,11 @@ import type * as Preset from '@docusaurus/preset-classic';
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: 'Graphene',
+  title: 'graphene-ci',
   tagline: 'CI and infrastructure control plane on Temporal',
   favicon: 'img/favicon.ico',
 
+  // Dark is the brand-native mode; light stays available on the toggle.
   future: {
     v4: true,
   },
@@ -52,12 +53,13 @@ const config: Config = {
   themes: ['@docusaurus/theme-mermaid'],
 
   themeConfig: {
-    image: 'img/social-card.svg',
+    image: 'img/social-card.png',
     colorMode: {
-      respectPrefersColorScheme: true,
+      defaultMode: 'dark',
+      respectPrefersColorScheme: false,
     },
     navbar: {
-      title: 'Graphene',
+      title: 'graphene-ci',
       logo: {
         alt: 'Graphene',
         src: 'img/logo.svg',
@@ -86,7 +88,8 @@ const config: Config = {
       copyright: `Copyright © ${new Date().getFullYear()} graphene-ci.`,
     },
     prism: {
-      theme: prismThemes.github,
+      // Code is a dark surface in both modes — like the mark.
+      theme: prismThemes.dracula,
       darkTheme: prismThemes.dracula,
       additionalLanguages: ['bash', 'yaml', 'protobuf', 'docker', 'go'],
     },
