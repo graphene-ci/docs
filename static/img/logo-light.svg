@@ -3,11 +3,11 @@
   <defs>
 
     <linearGradient id="whiteMetal" x1="385" y1="370" x2="870" y2="875" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#F7F8FB"/>
-      <stop offset="0.20" stop-color="#FFFFFF"/>
-      <stop offset="0.50" stop-color="#E8EBF1"/>
-      <stop offset="0.78" stop-color="#FFFFFF"/>
-      <stop offset="1" stop-color="#ECEEF4"/>
+      <stop offset="0" stop-color="#1a1a26"/>
+      <stop offset="0.20" stop-color="#0e0e16"/>
+      <stop offset="0.50" stop-color="#23232f"/>
+      <stop offset="0.78" stop-color="#0e0e16"/>
+      <stop offset="1" stop-color="#1a1a26"/>
     </linearGradient>
 
     <linearGradient id="accent" x1="694" y1="583" x2="914" y2="655" gradientUnits="userSpaceOnUse">
@@ -24,7 +24,7 @@
 
     <filter id="whiteGlow" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
       <feGaussianBlur stdDeviation="7" result="blur"/>
-      <feFlood flood-color="#F6F8FF" flood-opacity="0.16"/>
+      <feFlood flood-color="#0e0e16" flood-opacity="0.12"/>
       <feComposite in2="blur" operator="in"/>
       <feMerge>
         <feMergeNode/>

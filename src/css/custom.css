@@ -32,11 +32,7 @@
   --ifm-global-radius: 8px;
   --docusaurus-highlighted-code-line-bg: rgba(124, 108, 248, 0.12);
 
-  /* the always-dark navbar */
-  --ifm-navbar-background-color: var(--graphene-ink);
-  --ifm-navbar-link-color: #c9c9d6;
-  --ifm-navbar-link-hover-color: #ffffff;
-  --ifm-navbar-shadow: inset 0 -1px 0 rgba(124, 108, 248, 0.25);
+  --ifm-navbar-shadow: inset 0 -1px 0 rgba(86, 70, 214, 0.2);
 }
 
 [data-theme='dark'] {
@@ -54,13 +50,14 @@
   --ifm-code-background: #171722;
   --ifm-toc-border-color: #23232f;
   --docusaurus-highlighted-code-line-bg: rgba(124, 108, 248, 0.16);
+
+  --ifm-navbar-background-color: var(--graphene-ink);
+  --ifm-navbar-link-color: #c9c9d6;
+  --ifm-navbar-link-hover-color: #ffffff;
+  --ifm-navbar-shadow: inset 0 -1px 0 rgba(124, 108, 248, 0.25);
 }
 
-/* ---- navbar: the brand block, dark in both modes ---- */
-
-.navbar {
-  background-color: var(--graphene-ink);
-}
+/* ---- navbar: the wordmark; colors follow the theme ---- */
 
 .navbar__title {
   font-family: 'JetBrains Mono', var(--ifm-font-family-monospace);
@@ -68,7 +65,6 @@
   font-size: 1.05rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #f4f4f8;
 }
 
 .navbar__logo {
@@ -76,34 +72,8 @@
   margin-right: 0.65rem;
 }
 
-.navbar__link,
-.navbar .clean-btn {
-  color: var(--ifm-navbar-link-color);
-}
-
-.navbar__link--active,
-.navbar__link:hover,
-.navbar .clean-btn:hover {
-  color: #ffffff;
-}
-
-/* hamburger / color-mode icons on the dark navbar in light mode */
-[data-theme='light'] .navbar .navbar__toggle,
-[data-theme='light'] .navbar [class*='colorModeToggle'] button,
-[data-theme='light'] .navbar [class*='toggleButton'] {
-  color: #c9c9d6;
-}
-
-/* the mobile sidebar inherits the navbar brand block */
-.navbar-sidebar {
-  background-color: var(--graphene-ink);
-}
-.navbar-sidebar .menu__link {
-  color: #c9c9d6;
-}
-.navbar-sidebar .menu__link:hover,
-.navbar-sidebar .menu__link--active {
-  color: #ffffff;
+[data-theme='dark'] .navbar__title {
+  color: #f4f4f8;
 }
 
 /* ---- headings carry the geometric face ---- */
@@ -120,9 +90,9 @@ h2 {
   border-radius: 0 var(--ifm-global-radius) var(--ifm-global-radius) 0;
 }
 
-/* ---- footer matches the ink ---- */
+/* ---- footer matches the ink in dark mode ---- */
 
-.footer--dark {
+[data-theme='dark'] .footer--dark {
   --ifm-footer-background-color: var(--graphene-ink);
   box-shadow: inset 0 1px 0 rgba(124, 108, 248, 0.25);
 }
