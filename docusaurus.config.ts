@@ -61,8 +61,9 @@ const config: Config = {
     navbar: {
       title: 'graphene-ci',
       logo: {
-        alt: 'Graphene',
-        src: 'img/logo.svg',
+        alt: 'graphene-ci',
+        src: 'img/logo-light.svg',
+        srcDark: 'img/logo.svg',
       },
       items: [
         {
