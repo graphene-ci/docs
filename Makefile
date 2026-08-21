@@ -1,9 +1,12 @@
 # The docs development cycle. `make dev` is the loop; CI runs
 # `make check` on every PR and deploys `make build` from main.
-.PHONY: dev build serve check typecheck clean
+.PHONY: dev dev-ru build serve check typecheck clean
 
-dev: ## live-reload dev server on http://localhost:3000/docs/
+dev: ## live-reload dev server, EN only: http://localhost:3000/docs/
 	yarn start
+
+dev-ru: ## live-reload dev server, RU only: http://localhost:3002/docs/ru/
+	yarn start --locale ru --port 3002
 
 build: ## production build into build/
 	yarn build
