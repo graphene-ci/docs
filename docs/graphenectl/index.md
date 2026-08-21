@@ -38,6 +38,15 @@ logged in: context graphene.example, role run, namespace team
 writing anything, then saves the context and makes it current. See
 [Contexts](contexts.md).
 
+Wire the shell completion right away — the grammar, the kinds, and the
+ids all complete, so nobody guesses (`graphenectl get d<TAB>` offers
+`docker`, `docker-volume`, `docker-network` even before any records
+exist — the kinds come from the pipelines' manifests):
+
+```console
+$ source <(graphenectl completion bash)     # zsh and fish: see Project commands
+```
+
 ## Grammar
 
 ```text

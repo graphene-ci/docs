@@ -37,6 +37,15 @@ logged in: context graphene.example, role run, namespace team
 затем сохраняет контекст и делает его текущим. См.
 [Контексты](contexts.md).
 
+Сразу подключите автодополнение — дополняются грамматика, kinds и id,
+гадать не придётся (`graphenectl get d<TAB>` предложит `docker`,
+`docker-volume`, `docker-network` ещё до появления записей — kinds
+берутся из манифестов пайплайнов):
+
+```console
+$ source <(graphenectl completion bash)     # zsh и fish: см. Проектные команды
+```
+
 ## Грамматика
 
 ```text
