@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1254" height="1254" viewBox="0 0 1254 1254" fill="none">
+  <title>Vector logo — transparent background, sharp corners</title>
+  <defs>
+
+    <linearGradient id="whiteMetal" x1="385" y1="370" x2="870" y2="875" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F7F8FB"/>
+      <stop offset="0.20" stop-color="#FFFFFF"/>
+      <stop offset="0.50" stop-color="#E8EBF1"/>
+      <stop offset="0.78" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#ECEEF4"/>
+    </linearGradient>
+
+    <linearGradient id="accent" x1="694" y1="583" x2="914" y2="655" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#9B87FF"/>
+      <stop offset="0.52" stop-color="#7F68FF"/>
+      <stop offset="1" stop-color="#9B85FF"/>
+    </linearGradient>
+
+    <linearGradient id="decor" x1="65" y1="230" x2="1236" y2="1028" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4D476F"/>
+      <stop offset="0.46" stop-color="#514881"/>
+      <stop offset="1" stop-color="#6650B9"/>
+    </linearGradient>
+
+    <filter id="whiteGlow" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feFlood flood-color="#F6F8FF" flood-opacity="0.16"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="violetGlow" x="-60%" y="-60%" width="220%" height="220%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feFlood flood-color="#755BFF" flood-opacity="0.35"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Decorative molecular / hexagonal lines -->
+  <g stroke="url(#decor)" stroke-width="4" stroke-linecap="butt" stroke-linejoin="miter" opacity="0.82">
+    <!-- top-left network -->
+    <path d="M260 231H448L522 360L474 443"/>
+    <path d="M260 231L290 284L248 361"/>
+    <path d="M126 361H248L309 472L248 583H126L63 472L126 361Z"/>
+    <path d="M309 472H431"/>
+
+    <!-- right / bottom-right network -->
+    <path d="M1062 515L1006 614L1062 709"/>
+    <path d="M1062 709H1179L1237 810L1179 912H1064L1004 805L1062 709Z"/>
+    <path d="M868 805H1004L1064 916L1004 1027H868L805 916L868 805Z"/>
+  </g>
+
+  <!-- Main C-like mark -->
+  <path
+    d="M629 353L389 494V760L632 900L862 766L824 744L629 856L425 738V516L625 399L822 508L860 487L629 353Z"
+    fill="url(#whiteMetal)" filter="url(#whiteGlow)"/>
+
+  <!-- Accent dash and dot -->
+  <rect x="694" y="613" width="116" height="13" fill="url(#accent)" filter="url(#violetGlow)"/>
+  <circle cx="879" cy="620" r="35" fill="url(#accent)" filter="url(#violetGlow)"/>
+</svg>
