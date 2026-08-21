@@ -71,8 +71,8 @@ keeps `rollout` apart.
 
 - **stdout is data, stderr is progress.** Pipe stdout anywhere; the
   human-facing chatter never contaminates it.
-- **Exit codes**: `0` success, `1` failure (a watched run's terminal
-  status maps to the exit code), `2` usage errors.
+- **Exit codes**: `0` success, `1` failure — a watched run's terminal
+  status maps to the exit code.
 - **Flags parse on either side of positionals**:
   `graphenectl secret set demo --value x` and
   `graphenectl secret set --value x demo` are the same command.

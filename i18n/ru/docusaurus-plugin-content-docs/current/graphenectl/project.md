@@ -28,7 +28,7 @@ $ graphenectl init perf-nightly
 ## completion
 
 ```text
-graphenectl completion bash|zsh|fish
+graphenectl completion bash|zsh|fish|powershell
 ```
 
 Печатает шелл-хук. Дополнение покрывает всю грамматику — команды,
@@ -53,9 +53,9 @@ $ graphenectl ctx use <TAB>
 dev  dev-admin
 ```
 
-## version
+## --version
 
 ```console
-$ graphenectl version
-graphenectl dev
+$ graphenectl --version
+graphenectl version dev
 ```

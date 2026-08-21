@@ -12,9 +12,9 @@ default table and names the other forms only when one is the point.
 
 | Flag | Values | Default | What it does |
 |---|---|---|---|
-| `-o` | `table` \| `wide` \| `name` \| `json` \| `yaml` | `table` | the shape of the answer |
+| `-o, --output` | `table` \| `wide` \| `name` \| `json` \| `yaml` | `table` | the shape of the answer |
 | `--jq <expr>` | a jq expression | — | pipe the JSON form through [gojq](https://github.com/itchyny/gojq); implies JSON |
-| `-w` | bool | off | watch a listing: the snapshot, then only changes |
+| `-w, --watch` | bool | off | watch a listing: the snapshot, then only changes |
 | `--chunk-size <n>` | int | `500` | list page size; the pages walk invisibly; `0` — one unpaginated request |
 
 ## `-o table` — the default
