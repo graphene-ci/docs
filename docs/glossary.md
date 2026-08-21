@@ -4,165 +4,172 @@ title: Glossary
 sidebar_label: Glossary
 ---
 
-# Словарь
+# Glossary
 
-Термины в том значении, в котором их использует система и эта
-документация. Одно значение на термин.
+Terms in the meaning the system and this documentation use them. One
+meaning per term.
 
-## Выполнение
+## Execution
 
-**Пайплайн** — единица автоматизации в graphene: программа на языке
-общего назначения, собранная с SDK. Описывает и процесс, и нужные ему
-ресурсы — объявляет их, выполняет действия на машинах и владеет тем,
-что создала. Один пайплайн — одно имя и один бинарь.
+**Pipeline** — the unit of automation in graphene: a program in a
+general-purpose language, built with the SDK. It describes both the
+process and the resources that process needs — declares them, executes
+actions on machines, and owns what it created. One pipeline — one name
+and one binary.
 
-**Ран (run)** — одно выполнение пайплайна и владелец по умолчанию
-всего, что оно создало. Восстановим: после падения продолжается с
-места остановки. Идентификатор называет ровно один ран: повторный
-старт присоединяется к существующему.
+**Run** — one execution of a pipeline and the default owner of
+everything it created. Recoverable: after a crash it continues from
+where it stopped. The identifier names exactly one run: starting it
+again attaches to the existing one.
 
-**Роль** — то, чем занят конкретный экземпляр бинаря пайплайна:
-`run` — ведёт ран, `machine` — выполняет действия на машине агента.
-Код одинаковый; роль назначает окружение запуска.
+**Role** — what a particular instance of the pipeline binary is doing:
+`run` drives the run, `machine` executes actions on an agent's
+machine. The code is the same; the launch environment assigns the
+role.
 
-**Managed / inplace** — два способа дать рану исполнителя. Managed:
-сервер сам запускает контейнер из указанного образа и сам убирает его
-после завершения. Inplace: пользователь запускает бинарь сам, где
-угодно; сервер только стартует процесс рана.
+**Managed / inplace** — the two ways to give a run its executor.
+Managed: the server itself launches a container from the given image
+and removes it after completion. Inplace: the user launches the binary
+themselves, anywhere; the server only starts the run's process.
 
-**Действие (activity)** — функция, адресованная агенту и выполняемая
-на его машине; может быть адресована и набору агентов сразу. Упавшее
-действие повторяется, успешно завершённое — не выполняется повторно.
+**Action (activity)** — a function addressed to an agent and executed
+on its machine; it can also be addressed to a set of agents at once. A
+failed action is retried; a successfully completed one never executes
+twice.
 
-**Записывающий проход (recording pass)** — однократное выполнение
-функции пайплайна перед стартом рана: ничего не исполняется,
-объявления действий и ресурсов регистрируются, чтения возвращают
-оптимистичные нули. Благодаря ему объявления живут прямо в коде, без
-отдельной регистрации; цена — код обязан переживать проход с нулевыми
-данными.
+**Recording pass** — a single execution of the pipeline function
+before the run starts: nothing executes, declarations of actions and
+resources get registered, reads return optimistic zeros. It is why
+declarations live right in the code, with no separate registration;
+the price — the code must survive a pass with zero-valued data.
 
-## Записи
+## Records
 
-**Ресурс** — всё, что имеет durable-запись и владельца: агент,
-артефакт, объект Kubernetes, любой тип из ресурсной библиотеки.
-Создаётся объявлением в пайплайне; без записи ресурс создать нельзя.
+**Resource** — anything that has a durable record and an owner: an
+agent, an artifact, a Kubernetes object, any type from a resource
+library. Created by declaring it in a pipeline; a resource cannot be
+created without a record.
 
-**Запись (entity)** — реализация ресурса: живой durable-процесс,
-который хранит spec и state, исполняет команды по очереди и
-периодически сверяет реальность с желаемым состоянием. На один
-ресурс — ровно одна запись: повторное объявление присоединяется к
-существующей.
+**Record (entity)** — the implementation of a resource: a live durable
+process that holds spec and state, executes commands in order, and
+periodically reconciles reality against the desired state. One
+resource — exactly one record: declaring it again attaches to the
+existing one.
 
-**Spec / State** — две половины записи. Spec — желаемая конфигурация,
-задаётся объявлением. State — наблюдаемое состояние, пишется только
-самой записью по ходу её жизни.
+**Spec / State** — the two halves of a record. Spec is the desired
+configuration, set by the declaration. State is the observed
+condition, written only by the record itself over its life.
 
-**Фаза** — положение записи в жизненном цикле: `creating`, `ready`,
-`deleting`, `deleted`, `create_failed`, `delete_failed`. `ready`
-означает, что ресурс сошёлся к желаемому состоянию и его выходы
-доступны.
+**Phase** — the record's position in the lifecycle: `creating`,
+`ready`, `deleting`, `deleted`, `create_failed`, `delete_failed`.
+`ready` means the resource has converged to the desired state and its
+outputs are available.
 
-**Хэндл (handle)** — то, что возвращает объявление ресурса: немедленно
-и не блокируя. Выходы ресурса доступны только через `Ready`: первое
-чтение ждёт готовности, ошибка готовности валит ран в этой точке.
-Неготовый ресурс невозможно использовать по построению.
+**Handle** — what declaring a resource returns: immediately, without
+blocking. The resource's outputs are reachable only through `Ready`:
+the first read waits for readiness, and a readiness failure fails the
+run at that point. An unready resource is impossible to use by
+construction.
 
-**Присоединённый ресурс (attached)** — хэндл ЧУЖОГО ресурса:
-распознан, не создан. Читается как любой хэндл, но не может быть
-родителем или ребёнком в дереве владения: чужое нельзя ни обременить,
-ни отдать.
+**Attached resource** — the handle of a FOREIGN resource: recognized,
+never created. Reads like any handle, but cannot be a parent or a
+child in the ownership tree: what is not yours can be neither burdened
+nor given away.
 
-**Ресурсная библиотека** — обычный модуль поверх SDK, приносящий свои
-типы ресурсов: объекты Kubernetes, docker, что угодно. Библиотечный
-ресурс — полноправный: та же запись, то же владение, те же метки.
+**Resource library** — an ordinary module on top of the SDK that
+brings its own resource types: Kubernetes objects, docker, anything.
+A library resource is a first-class one: the same record, the same
+ownership, the same labels.
 
-## Владение
+## Ownership
 
-**Владелец** — тот, вместе с кем ресурс умирает: другой ресурс, ран
-или стенд. Ровно один; по умолчанию — создавший ран. Владелец — часть
-записи ресурса и виден в любой момент.
+**Owner** — the one a resource dies with: another resource, a run, or
+the stand. Exactly one; by default — the creating run. The owner is
+part of the resource's record and visible at any moment.
 
-**Дерево владения** — граф, который образуют владельцы. Задаётся при
-объявлении (`Parent`, `Children`), меняется передачей. Владение
-отдают — его не забирают.
+**Ownership tree** — the graph the owners form. Set at declaration
+(`Parent`, `Children`), changed by transfer. Ownership is given away —
+never taken.
 
-**Каскадное удаление** — удаление владельца удаляет всё его поддерево,
-глубже — раньше: виртуальная машина прежде подсети, подсеть прежде
-сети.
+**Cascade delete** — deleting an owner deletes its whole subtree,
+deepest first: the virtual machine before the subnet, the subnet
+before the network.
 
-**Передача (transfer)** — смена владельца ресурса вместе с его
-поддеревом: другому ресурсу или стенду, опционально — со сроком жизни
-у нового владельца. Единственный способ для ресурса пережить свой ран.
+**Transfer** — changing a resource's owner together with its subtree:
+to another resource or to the stand, optionally with a lifetime under
+the new owner. The only way for a resource to outlive its run.
 
-**Стенд (stand)** — постоянный владелец, который есть у каждого
-пайплайна. Ресурсы, переданные стенду, переживают свой ран — так живёт
-долгосрочная инфраструктура пайплайна между запусками.
+**Stand** — the permanent owner every pipeline has. Resources
+transferred to the stand outlive their run — this is how a pipeline's
+long-lived infrastructure persists between runs.
 
-**Срок жизни (TTL)** — граница пребывания ресурса у нового владельца,
-заданная при передаче. По истечении сервер удаляет поддерево сам. Без
-срока ресурс живёт до явного удаления.
+**Lifetime (TTL)** — the bound on a resource's stay under its new
+owner, set at transfer. When it expires, the server deletes the
+subtree itself. Without one, the resource lives until an explicit
+delete.
 
-## Машины
+## Machines
 
-**Агент** — процесс на машине пользователя и одновременно ресурс —
-запись, связывающая реальную машину с этим процессом. Подключается к
-серверу только исходящим соединением — машина не открывает портов.
-Объявление агента не создаёт машину: запись ждёт подключения агента
-(или ставит его по SSH, если задано).
+**Agent** — a process on the user's machine and, at the same time, a
+resource — the record linking the real machine to that process. It
+connects to the server with an outbound connection only — the machine
+opens no ports. Declaring an agent does not create a machine: the
+record waits for its agent to connect (or installs it over SSH when
+configured).
 
-**Факты машины** — то, что агент сообщил о реальной машине: адреса,
-ОС, ресурсы. Хранятся отдельно от записи; запись держит только ссылку.
+**Machine facts** — what the agent reported about the real machine:
+addresses, OS, capacity. Stored apart from the record; the record
+keeps only a reference.
 
-**Возможность (capability)** — одно умение машины, записанное на её
-запись публикатором: установщиком, человеком, образом. Никогда не
-«обнаруживается». Имеет имя, метки, информативную версию и признак
-готовности. Принадлежит машине: ран установщика может умереть, docker
-остаётся установленным.
+**Capability** — one thing a machine can do, written onto its record
+by a publisher: an installer, a person, an image. Never "discovered".
+Has a name, labels, an informative version, and a readiness flag.
+Belongs to the machine: the installer's run may die, docker stays
+installed.
 
-**Требование (need)** — требование возможности у агента: имя плюс
-ограничения на метки (равенство и «одно из»). Версии никогда не
-сравниваются. Готовность агента ждёт выполнения всех требований —
-отказ приходит до отправки работы, а не после её падения.
+**Need** — a capability requirement on an agent: a name plus label
+constraints (equality and "one of"). Versions are never compared. The
+agent's readiness waits for every need to be met — the refusal comes
+before work is dispatched, not after it fails.
 
-## Данные
+## Data
 
-**Артефакт** — ресурс, байты которого лежат в хранилище блобов, а
-запись хранит digest. Загружается из рана; чужой артефакт можно
-присоединить.
+**Artifact** — a resource whose bytes live in the blob store while the
+record keeps the digest. Uploaded from a run; a foreign artifact can
+be attached.
 
-**Блоб** — байты, адресованные содержимым: ключ — хеш. Digest считает
-сервер при загрузке — клиент не может его подделать.
+**Blob** — bytes addressed by content: the key is the hash. The server
+computes the digest on upload — a client cannot forge it.
 
-**Секрет** — именованное значение на сервере, заведённое
-администратором. В спеках, логах и истории ходит только имя; значение
-получает исполняющий код в момент использования и обратно не
-возвращает.
+**Secret** — a named value on the server, set by an administrator.
+Only the name travels in specs, logs, and history; the executing code
+receives the value at the moment of use and never returns it.
 
-## Выборка
+## Selection
 
-**Метка (label)** — пара `ключ=значение` на любой записи и на ране.
-Семантика меток метрик: выборка и группировка, никогда не данные.
-Задаётся при объявлении, меняется командой записи.
+**Label** — a `key=value` pair on any record and on a run.
+Metric-label semantics: selection and grouping, never data. Set at
+declaration, changed by a record command.
 
-**Системная метка** — метка с зарезервированным префиксом
-`graphene.io/`; пишется только системой. `graphene.io/run` — ран,
-создавший запись (стабильна при передачах, в отличие от владельца).
+**System label** — a label under the reserved `graphene.io/` prefix;
+written only by the system. `graphene.io/run` — the run that created
+the record (stable across transfers, unlike the owner).
 
-**Селектор** — тип + фаза + владелец + метки; каждое заданное поле
-должно совпасть.
+**Selector** — kind + phase + owner + labels; every set field must
+match.
 
 ## Control plane
 
-**Сервер** — control plane graphene и единственная точка входа: один
-порт, через который ходят агенты, процессы ранов, браузер и CLI.
-Внутренняя инфраструктура (durable-ядро, реестр образов, хранилище
-блобов) снаружи не видна и не адресуема; TLS терминирует прокси перед
-сервером.
+**Server** — the graphene control plane and the single point of entry:
+one port through which agents, run processes, the browser, and the CLI
+connect. The internal infrastructure (the durable core, the image
+registry, the blob store) is invisible and unaddressable from outside;
+TLS terminates at a proxy in front of the server.
 
-**Namespace** — единица изоляции. Токен привязан к одному namespace
-или ко всем (администраторы). Записи, раны и секреты разных namespace
-не видят друг друга.
+**Namespace** — the unit of isolation. A token is bound to one
+namespace or to all of them (administrators). Records, runs, and
+secrets of different namespaces do not see each other.
 
-**Токен** — единственный вид credentials. Три роли: `admin`, `run`,
-`agent`; токен агента дополнительно привязан к одному агенту. Каждый
-токен привязан к namespace (админский — ко всем).
+**Token** — the only kind of credentials. Three roles: `admin`, `run`,
+`agent`; an agent token is additionally bound to one agent. Every
+token is bound to a namespace (an admin one — to all).

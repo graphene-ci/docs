@@ -97,8 +97,8 @@ Two decisions define graphene:
 
 1. **A pipeline is a program.** Not YAML with embedded shell, but code
    in a general-purpose language: types, control flow, libraries,
-   tests. Declaring a resource and running a step on a machine are
-   ordinary function calls. A pipeline run is a *recoverable
+   tests. Declaring a resource and executing an action on a machine
+   are ordinary function calls. A pipeline run is a *recoverable
    process*, not a sequence of steps.
 
 2. **Everything created is accounted for.** Every resource gets a
