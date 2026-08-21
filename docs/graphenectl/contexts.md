@@ -54,12 +54,38 @@ graphenectl login --server host:port (--token-stdin | --token <t>)
 `login` performs a `Whoami` handshake **before** writing anything: a
 bad server or token never lands in the file. A namespaced token pins
 the context to its own namespace; a cluster-wide token (`*`) keeps your
-`--namespace` pick. The context becomes current.
+`--namespace` pick (or asks). The context becomes current.
 
 ```console
 $ echo dev-run-token | graphenectl login --server localhost:7233 --insecure --token-stdin --name demo
-logged in: context demo, role run, namespace default
+logged in: context demo, role run, namespace default (current)
 ```
+
+### Interactive login
+
+On a terminal `login` asks only for the **missing** pieces — any flag
+silences its question. The token goes through hidden input: it never
+echoes and never lands in the shell history. The first connection
+attempt is honest TLS; plaintext happens only after an explicit yes:
+
+```console
+$ graphenectl login
+server (host:port): localhost:7233
+token:
+verifying…
+TLS handshake with localhost:7233 failed: http: server gave HTTP response to HTTPS client
+retry over plaintext? — dev contours only [y/N]: y
+✓ role admin, namespace *
+namespace to work in [default]: team-b
+context name [localhost]: dev
+logged in: context dev, role admin, namespace team-b (current)
+```
+
+The namespace question appears only for a cluster-wide token — a
+namespaced one pins itself. Reusing an existing context name that
+points at a different server asks before overwriting. Off a terminal
+nothing ever prompts: missing pieces fail with the usual errors, so CI
+never hangs.
 
 ## ctx — managing contexts
 
