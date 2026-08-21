@@ -14,7 +14,7 @@ the answer renders.
 |---|---|---|---|
 | `--context <name>` | string | the config's `current` | use this named context for one call |
 | `--config <path>` | string | `$GRAPHENE_CONFIG`, else `~/.config/graphene/config.yaml` | read contexts from this file |
-| `-n <namespace>` | string | the context's namespace | namespace for one call — meaningful for cluster-wide admin tokens (`*`); a namespaced token is pinned to its own scope by the server |
+| `-n, --namespace <ns>` | string | the context's namespace | namespace for one call — meaningful for cluster-wide admin tokens (`*`); a namespaced token is pinned to its own scope by the server |
 
 ## Examples
 

@@ -30,7 +30,7 @@ submit fails immediately, field by field, not on a machine.
 | `--params-file <path>` | — | params from a JSON or YAML file; `-` reads stdin |
 | `--run-id <id>` | `<pipeline>-<timestamp>` | the run's name; the same id attaches, never forks |
 | `--image <ref>` | the pipeline record's | worker image override |
-| `-l k=v` | repeatable | run labels — the same label language records use |
+| `-l, --label k=v` | repeatable | run labels — the same label language records use |
 | `--watch` | off | follow the run to its end (see `run watch`) |
 
 `--params` and `--params-file` are mutually exclusive. A YAML file

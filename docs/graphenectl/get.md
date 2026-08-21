@@ -19,10 +19,10 @@ other (`get run`); the listing then shows run columns.
 
 | Flag | Type | Default | What it does |
 |---|---|---|---|
-| `-l k=v` | repeatable | — | label selector, every pair must match |
-| `-p <word>` | string | — | THE lifecycle filter: a record phase (`creating`, `ready`, `deleting`, ...) for kinds, a workflow status (`Running`, `Completed`, `Terminated`, ...) for runs |
+| `-l, --selector k=v` | repeatable | — | label selector, every pair must match |
+| `-p, --phase <word>` | string | — | THE lifecycle filter: a record phase (`creating`, `ready`, `deleting`, ...) for kinds, a workflow status (`Running`, `Completed`, `Terminated`, ...) for runs |
 | `--owner <ref>` | string | — | records owned by this owner (`run/x`, `stand/p`, `agent/vm-1`) |
-| `-w` | bool | off | watch: the snapshot, then only changes — see [Output forms](outputs.md) |
+| `-w, --watch` | bool | off | watch: the snapshot, then only changes — see [Output forms](outputs.md) |
 | `--chunk-size` | int | 500 | list page size — see [Output forms](outputs.md) |
 
 Plus the [connection flags](common-flags.md) and the
