@@ -7,7 +7,7 @@ diagrams enabled.
 ## Development
 
 ```bash
-pnpm install
+yarn install
 make dev        # live-reload on http://localhost:3000/docs/
 make check      # typecheck + production build — what CI runs
 make serve      # inspect the production build locally
