@@ -5,6 +5,8 @@
 dev: ## live-reload dev server, EN only: http://localhost:3000/docs/
 	yarn start
 
+# NOT concurrently with dev: two dev servers share .docusaurus and the
+# build cache and corrupt each other. One at a time, or use serve.
 dev-ru: ## live-reload dev server, RU only: http://localhost:3002/docs/ru/
 	yarn start --locale ru --port 3002
 
