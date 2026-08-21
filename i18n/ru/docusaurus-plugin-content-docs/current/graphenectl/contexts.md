@@ -54,12 +54,37 @@ graphenectl login --server host:port (--token-stdin | --token <t>)
 `login` делает рукопожатие `Whoami` **до** записи чего-либо: битый
 сервер или токен никогда не попадают в файл. Токен с неймспейсом
 пинит контекст к своему скоупу; кластерный токен (`*`) уважает ваш
-`--namespace`. Контекст становится текущим.
+`--namespace` (или спросит). Контекст становится текущим.
 
 ```console
 $ echo dev-run-token | graphenectl login --server localhost:7233 --insecure --token-stdin --name demo
-logged in: context demo, role run, namespace default
+logged in: context demo, role run, namespace default (current)
 ```
+
+### Интерактивный login
+
+В терминале `login` спрашивает только **недостающее** — любой флаг
+гасит свой вопрос. Токен вводится скрыто: не эхается и не попадает в
+историю шелла. Первая попытка соединения — честный TLS; plaintext —
+только после явного согласия:
+
+```console
+$ graphenectl login
+server (host:port): localhost:7233
+token:
+verifying…
+TLS handshake with localhost:7233 failed: http: server gave HTTP response to HTTPS client
+retry over plaintext? — dev contours only [y/N]: y
+✓ role admin, namespace *
+namespace to work in [default]: team-b
+context name [localhost]: dev
+logged in: context dev, role admin, namespace team-b (current)
+```
+
+Вопрос про неймспейс появляется только у кластерного токена —
+неймспейсный пинится сам. Существующее имя контекста, смотрящее на
+другой сервер, переспрашивает перед перезаписью. Вне терминала ничего
+не спрашивается: недостающее падает обычными ошибками — CI не виснет.
 
 ## ctx — управление контекстами
 
