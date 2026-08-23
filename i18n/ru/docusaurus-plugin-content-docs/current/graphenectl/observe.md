@@ -70,23 +70,38 @@ $ graphenectl logs run logs-test-2
 
 ## metrics
 
-Стандартный PromQL range-ответ бекенда, как есть — отдавайте тому, кто
-рисует:
+По умолчанию — читаемая таблица серий; `-o json` печатает стандартный
+PromQL range-ответ бекенда как есть, `--jq` выполняется поверх него:
 
 ```console
 $ graphenectl metrics run logs-test-2
+METRIC                      POINTS  LAST
+process_cpu_seconds_total   42      3.17
+```
+
+```console
+$ graphenectl metrics run logs-test-2 -o json
 {"status":"success","data":{"resultType":"matrix","result":[...]}}
 ```
 
 ## trace
 
-Стандартный Jaeger JSON трасс записи:
+Таблица спанов по времени старта; `-o json` печатает стандартный
+Jaeger JSON, `--jq` — поверх него:
 
 ```console
 $ graphenectl trace run logs-test-2
-{"data":[{"processes":{"p2":{"serviceName":"graphene-pipeline",...}}}]}
+START         DURATION  OPERATION                  SERVICE
+20:16:07.015  0.1ms     StartActivity:k8s.observe  graphene-pipeline
+20:16:07.070  36.6ms    RunActivity:k8s.observe    graphene-pipeline
+```
+
+```console
+$ graphenectl trace run logs-test-2 --jq '.data[0].spans | length'
+128
 ```
 
 Измерение без настроенного бекенда отвечает внятной ошибкой
-`unimplemented`, а не тишиной. Пустое измерение (у k8s-записи нет
-логов) — нормальный пустой ответ.
+`unimplemented`, а не тишиной. Пустое измерение печатает заметку в
+stderr (`No log records.`, `No metrics recorded.`) и выходит с кодом
+0 — stdout остаётся чистым для пайпов.

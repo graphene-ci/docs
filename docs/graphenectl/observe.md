@@ -69,23 +69,38 @@ raw inside of the worker, tailed by the server.
 
 ## metrics
 
-The backend's standard PromQL range response, as-is — pipe it to
-whatever draws:
+A readable series table by default; `-o json` prints the backend's
+standard PromQL range response as-is, `--jq` runs over it:
 
 ```console
 $ graphenectl metrics run logs-test-2
+METRIC                      POINTS  LAST
+process_cpu_seconds_total   42      3.17
+```
+
+```console
+$ graphenectl metrics run logs-test-2 -o json
 {"status":"success","data":{"resultType":"matrix","result":[...]}}
 ```
 
 ## trace
 
-Standard Jaeger JSON of the record's traces:
+A span table sorted by start time; `-o json` prints the standard
+Jaeger JSON, `--jq` runs over it:
 
 ```console
 $ graphenectl trace run logs-test-2
-{"data":[{"processes":{"p2":{"serviceName":"graphene-pipeline",...}}}]}
+START         DURATION  OPERATION                  SERVICE
+20:16:07.015  0.1ms     StartActivity:k8s.observe  graphene-pipeline
+20:16:07.070  36.6ms    RunActivity:k8s.observe    graphene-pipeline
+```
+
+```console
+$ graphenectl trace run logs-test-2 --jq '.data[0].spans | length'
+128
 ```
 
 A dimension without a configured backend answers with a clear
-`unimplemented` error, not silence. An empty dimension (a k8s record
-has no logs) is a normal empty answer.
+`unimplemented` error, not silence. An empty dimension prints a note
+to stderr (`No log records.`, `No metrics recorded.`) and exits 0 —
+stdout stays clean for pipes.
