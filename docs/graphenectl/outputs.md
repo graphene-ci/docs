@@ -51,7 +51,10 @@ $ graphenectl get docker-volume -o name | xargs -I{} graphenectl delete {}
 
 ## `-o json`
 
-The protojson form, stable field names:
+The protojson form, stable field names. Bytes fields that carry JSON
+by contract — a record's `spec` and `state`, a pipeline `manifest`,
+run `params`/`result`, event payloads — decode into real objects on
+the way out instead of the base64 protojson would print:
 
 ```console
 $ graphenectl get run watch-demo -o json
@@ -72,7 +75,13 @@ status: Terminated
 ## `--jq` — the scripting form
 
 One expression over the JSON form; strings print raw (`jq -r`
-behavior). On streams the expression runs per message:
+behavior). On streams the expression runs per message. The embedded
+fields are already decoded, so paths reach straight into them:
+
+```console
+$ graphenectl get pipeline perf-nightly --jq '.resource.state.manifest.kinds'
+["docker","docker-network","docker-volume"]
+```
 
 ```console
 $ graphenectl get run --jq '.runs[].runId'

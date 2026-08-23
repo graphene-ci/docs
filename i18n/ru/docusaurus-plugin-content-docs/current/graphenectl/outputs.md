@@ -52,7 +52,10 @@ $ graphenectl get docker-volume -o name | xargs -I{} graphenectl delete {}
 
 ## `-o json`
 
-Форма protojson, стабильные имена полей:
+Форма protojson, стабильные имена полей. Bytes-поля, несущие JSON по
+контракту — `spec` и `state` записи, `manifest` пайплайна,
+`params`/`result` прогона, payload'ы событий — декодируются в
+настоящие объекты, а не в base64, который печатал бы protojson:
 
 ```console
 $ graphenectl get run watch-demo -o json
@@ -73,7 +76,13 @@ status: Terminated
 ## `--jq` — скриптовая форма
 
 Одно выражение поверх JSON-формы; строки печатаются сырыми (поведение
-`jq -r`). На стримах выражение выполняется на каждое сообщение:
+`jq -r`). На стримах выражение выполняется на каждое сообщение.
+Встроенные поля уже декодированы — путь достаёт их напрямую:
+
+```console
+$ graphenectl get pipeline perf-nightly --jq '.resource.state.manifest.kinds'
+["docker","docker-network","docker-volume"]
+```
 
 ```console
 $ graphenectl get run --jq '.runs[].runId'
