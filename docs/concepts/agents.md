@@ -28,7 +28,7 @@ sequenceDiagram
     P->>S: declare agent (name[, ssh credentials])
     S->>E: create the record — phase: creating
     alt fresh VM: user-data
-        Note over M: the VM is created elsewhere (a resource library);<br/>user-data carries the install script
+        Note over M: the VM is created elsewhere (a resource library) —<br/>user-data carries the install script
         M->>M: boot: installs the agent
     else existing machine: SSH
         S->>M: connects over SSH, runs the same install script
