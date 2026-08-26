@@ -1,22 +1,26 @@
 ---
 sidebar_position: 11
-title: "secret, ns"
-sidebar_label: secret, ns
+title: "secret, var, namespace"
+sidebar_label: secret, var, ns
 ---
 
-# secret, ns
+# secret, var, namespace
+
+All three are **records** — declared, listed, read and deleted with the
+generic verbs. The only special command left is the one channel a
+secret's *value* travels.
 
 ## secret
 
+A secret is two-layered: the **record** (`kind: secret`) holds the
+name's life — its version counter and rotation history — while the
+**value** lives sealed in the server's value store and never comes
+back out. Only names ever travel: in specs, logs, history, and this
+CLI's output.
+
 ```text
 graphenectl secret set <name> [--value <v> | --value-file <path>]
-graphenectl secret list
-graphenectl secret delete <name>
 ```
-
-Secrets live encrypted on the server; **only names ever travel** — in
-specs, logs, history, and in this CLI's output. A worker resolves the
-value at the point of use.
 
 | Flag | What it does |
 |---|---|
@@ -25,49 +29,54 @@ value at the point of use.
 | *(neither)* | read the value from stdin |
 
 ```console
-$ graphenectl secret set gh-token --value-file token.txt
-secret gh-token set
-```
-
-```console
 $ pass show github | graphenectl secret set gh-token
-secret gh-token set
+secret gh-token set (version 1)
 ```
+
+Everything else is generic — and deleting the record takes the value
+with it:
 
 ```console
-$ graphenectl secret list
-gh-token
-kubeconfig
+$ graphenectl get secret
+$ graphenectl events secret gh-token       # every rotation
+$ graphenectl delete secret gh-token --wait
 ```
+
+## var
+
+The visible sibling: environment configuration (folder ids, hosts)
+that does not belong in pipeline code but is not sensitive. The value
+lives in the record and reads back. Params reference one as
+`${var:name}` — the door substitutes the value on run start, before
+validation; a missing variable fails the submit at the door.
 
 ```console
-$ graphenectl secret delete gh-token
-secret gh-token deleted
+$ graphenectl apply var yc-zone --spec '{"value":"ru-central1-a"}'
+$ graphenectl invoke var yc-zone set --data '{"value":"ru-central1-b"}'
+$ graphenectl get var
+$ graphenectl delete var yc-zone
 ```
 
-## ns
-
-```text
-graphenectl ns list
-graphenectl ns create <name> [--retention-days <n>]
-```
+## namespace
 
 A graphene namespace is the isolation unit — symmetric to a Temporal
-namespace: records, queues, visibility, the ownership tree, all
-isolated by the durable core itself. Tokens are scoped to one
-namespace; `ns` verbs need an admin token.
-
-| Flag | Default | What it does |
-|---|---|---|
-| `--retention-days` | the server default (30) | closed-workflow retention |
+namespace: records, queues, visibility, the ownership tree. Namespaces
+are records too, and they live in the **system namespace**
+`graphene-system` (a container cannot hold its own declaration), which
+also holds the installation's roles, bindings and service accounts.
+`graphene-system` and `default` cannot be deleted.
 
 ```console
-$ graphenectl ns list
-default
-team-b
+$ graphenectl apply namespace team-b --spec '{"retentionDays":14}'
+$ graphenectl get namespace
+REF                        PHASE  OWNER  LABELS
+namespace/graphene-system  ready
+namespace/default          ready
+namespace/team-b           ready
+$ graphenectl delete namespace team-b --wait
 ```
 
-```console
-$ graphenectl ns create team-b --retention-days 14
-namespace team-b created
-```
+Deleting a namespace **retires** it: the installation stops serving it,
+but what it holds is not destroyed — it ages out under its own
+retention. A retired namespace stays retired: neither a call naming it
+nor a server restart brings it back.

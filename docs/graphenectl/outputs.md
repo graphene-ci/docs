@@ -91,7 +91,7 @@ val-b
 ```
 
 ```console
-$ graphenectl pipeline show perf-nightly --jq .image
+$ graphenectl get pipeline/perf-nightly --jq .resource.state.image
 localhost:7233/default/perf-nightly:4f925b8c6e5fff45
 ```
 
