@@ -56,6 +56,7 @@ $ source <(graphenectl completion bash)     # zsh and fish: see Project commands
 
 ```text
 graphenectl <verb> <kind> [id] [flags]     # records: apply, get, delete, invoke, …
+graphenectl <kind>/<id> <dimension> [-f]   # resource-first observing: pipeline/x logs -f
 graphenectl run <lifecycle-verb> ...       # run lifecycle
 graphenectl <noun> <verb> ...              # ctx, secret, source, revision, account
 ```
