@@ -7,28 +7,42 @@ sidebar_label: Observing
 # events, logs, metrics, trace
 
 ```text
-graphenectl events  <kind> <id> [--follow]
-graphenectl logs    <kind> <id> [--follow]
-graphenectl metrics <kind> <id>
-graphenectl trace   <kind> <id>
+graphenectl events  <kind> <id> [-f]
+graphenectl logs    <kind> <id> [-f]
+graphenectl metrics <kind> <id> [-f]
+graphenectl trace   <kind> <id> [-f]
+
+graphenectl <kind>/<id> logs -f        # the resource-first twin
 ```
 
 Every record in graphene has five dimensions; `get` reads the first
 (state), these four verbs read the rest. They work on ANY record —
 `docker/nginx`, `agent/vm-1`, and runs by bare id (`events run my-run`).
+The dimensions belong to the record, so the record may come first:
+`graphenectl pipeline/x logs -f` is the same command as
+`graphenectl logs pipeline/x -f`.
 
 | Dimension | Verb | Source |
 |---|---|---|
 | 2 — events | `events` | the record's own workflow history: the plane of truth |
-| 3 — logs | `logs` | telemetry (the installation's log backend) |
-| 4 — metrics | `metrics` | telemetry, the standard PromQL range answer |
-| 5 — trace | `trace` | telemetry, standard Jaeger JSON |
+| 3 — logs | `logs` | history from the log backend, then **live push** |
+| 4 — metrics | `metrics` | a PromQL range snapshot, then **live push** |
+| 5 — trace | `trace` | a Jaeger JSON snapshot, then **live push** |
+
+**Follow is a push, not a poll.** The server door is already the
+collector — every signal of every worker passes through it — so a
+`-f` stream is fed the moment a signal arrives. For logs the
+subscription opens *before* the history read and the seam is
+deduplicated, so the moment between past and present cannot lose a
+line. Live metric and span entries are standard OTLP records; a slow
+consumer sheds oldest and is told how many were dropped
+(`... N lines dropped (slow consumer)` on stderr).
 
 ## Flags
 
 | Flag | Commands | What it does |
 |---|---|---|
-| `--follow` | `events`, `logs` | keep streaming new entries until you stop it |
+| `-f, --follow` | all four | keep streaming live entries until you stop it |
 
 Plus the [connection flags](common-flags.md) and the
 [output forms](outputs.md) (`--jq` runs per streamed message).
@@ -70,7 +84,16 @@ raw inside of the worker, tailed by the server.
 ## metrics
 
 A readable series table by default; `-o json` prints the backend's
-standard PromQL range response as-is, `--jq` runs over it:
+standard PromQL range response as-is, `--jq` runs over it. With `-f`
+the snapshot is followed by live points as they pass the collector:
+
+```console
+$ graphenectl gitsource/main metrics -f
+No metrics recorded.
+14:57:32.829  graphene.activity = 2
+14:57:32.829  graphene.door.invoke = 2
+```
+
 
 ```console
 $ graphenectl metrics run logs-test-2
