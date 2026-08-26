@@ -7,9 +7,13 @@ sidebar_label: Overview
 # graphenectl
 
 `graphenectl` is the control CLI of a graphene installation. It manages
-**records**: resources with their five dimensions, runs, secrets,
-namespaces, connection contexts. Its stance and grammar are kubectl's —
-the verb comes first, the kind second.
+**records**: resources with their five dimensions, runs, sources,
+secrets, namespaces, connection contexts. Its stance and grammar are
+kubectl's — the verb comes first, the kind second — and the client
+**knows no vocabulary of its own**: which kinds exist and which
+commands each answers is asked of the installation's dictionary (the
+`kind/*` records), so completion and interactive forms follow the
+server without a client rebuild.
 
 What it deliberately does **not** do: build, push, or start *your*
 pipeline from source. The pipeline binary manages its own pipeline —
@@ -38,10 +42,11 @@ logged in: context graphene.example, role run, namespace team
 writing anything, then saves the context and makes it current. See
 [Contexts](contexts.md).
 
-Wire the shell completion right away — the grammar, the kinds, and the
-ids all complete, so nobody guesses (`graphenectl get d<TAB>` offers
-`docker`, `docker-volume`, `docker-network` even before any records
-exist — the kinds come from the pipelines' manifests):
+Wire the shell completion right away — the grammar, the kinds, the ids
+and the commands all complete, so nobody guesses (`graphenectl get
+d<TAB>` offers `docker`, `docker-volume`, `docker-network` even before
+any records exist — the kinds come from the dictionary, which the
+pipelines' manifests feed):
 
 ```console
 $ source <(graphenectl completion bash)     # zsh and fish: see Project commands
@@ -50,9 +55,9 @@ $ source <(graphenectl completion bash)     # zsh and fish: see Project commands
 ## Grammar
 
 ```text
-graphenectl <verb> <kind> [id] [flags]     # records
+graphenectl <verb> <kind> [id] [flags]     # records: apply, get, delete, invoke, …
 graphenectl run <lifecycle-verb> ...       # run lifecycle
-graphenectl <noun> <verb> ...              # ctx, secret, ns, pipeline
+graphenectl <noun> <verb> ...              # ctx, secret, source, revision, account
 ```
 
 A record target is written either as two words or as one ref:
@@ -94,8 +99,8 @@ graphenectl: unauthenticated: 401 Unauthorized
 | [get](get.md) | listing records and reading one |
 | [Observing](observe.md) | `events`, `logs`, `metrics`, `trace` |
 | [tree](tree.md) | the ownership tree |
-| [Lifecycle verbs](lifecycle.md) | `delete`, `transfer`, `invoke` |
+| [Lifecycle verbs](lifecycle.md) | `apply`, `delete`, `transfer`, `invoke`, `kinds` |
 | [run](run.md) | starting and following runs |
-| [pipeline](pipeline.md) | the pipeline record |
-| [secret, ns](secret-ns.md) | secrets and namespaces |
+| [pipeline & sources](pipeline.md) | the project: sources, revisions, activation |
+| [secret, var, ns](secret-ns.md) | values and namespaces as records |
 | [Project commands](project.md) | `init`, `completion`, `version` |

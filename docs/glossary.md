@@ -166,10 +166,18 @@ connect. The internal infrastructure (the durable core, the image
 registry, the blob store) is invisible and unaddressable from outside;
 TLS terminates at a proxy in front of the server.
 
-**Namespace** — the unit of isolation. A token is bound to one
-namespace or to all of them (administrators). Records, runs, and
-secrets of different namespaces do not see each other.
+**Namespace** — the unit of isolation, itself a record. Records, runs,
+and values of different namespaces do not see each other. Namespace
+records — with the installation's roles, bindings and service
+accounts — live in the system namespace `graphene-system`.
 
-**Token** — the only kind of credentials. Three roles: `admin`, `run`,
-`agent`; an agent token is additionally bound to one agent. Every
-token is bound to a namespace (an admin one — to all).
+**Access** — a right is verb × kind × namespace, additive, granted by
+`role` records and bound by `rolebinding` records. Identities: people
+via OIDC, machines via `serviceaccount` records with issued tokens,
+runs and agents via minted tokens scoped to their record. Static
+config tokens map onto built-in roles (bootstrap and dev path).
+
+**Kind dictionary** — every kind the installation serves has a
+`kind/<name>` record: origin (system or brought by a pipeline),
+declarability, spec and command schemas, live record count. Clients
+discover the vocabulary from it — they carry none of their own.
