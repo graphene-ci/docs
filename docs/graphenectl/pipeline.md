@@ -24,7 +24,7 @@ with the generic verbs — `apply`, `get`, `invoke`, `delete`. What lives
 under `source` and `revision` below is only what those verbs cannot
 carry: bytes and streams.
 
-## Sources: two kinds, by what may be DONE to them
+## Git sources
 
 **`gitsource`** — a checkout of a ref. Files are readable and **not
 writable**: editing a checkout would create local changes on top of a
@@ -32,53 +32,52 @@ commit — a tree to keep, diff and merge, which is version control, and
 graphene is not one. It moves one way:
 
 ```console
-$ graphenectl apply gitsource main --spec '{"pipelineId":"perf-nightly","url":"https://…","ref":"main","subdir":"full","runtime":"go"}'
+$ graphenectl apply gitsource main --spec '{"pipelineId":"perf-nightly","url":"https://github.com/acme/perf.git","ref":"main","subdir":"full","runtime":"go"}'
 $ graphenectl invoke gitsource main sync        # fetch the ref again
 ```
 
-**`managedsource`** — the project's own tree. Every file is edited in
-place; each write is durable and counts a generation. Three ways to
-start one:
+`credentialRef` may name a Graphene secret for a private repository. Only the
+secret name is recorded; the value is resolved while fetching.
+
+Git sources are read-only in Graphene. Studio and
+`graphenectl source files/cat` expose the checkout for inspection. Edit code in
+its source repository, move the Git ref, then invoke `sync`.
+
+## Local source upload
+
+A local directory can be materialized without declaring a source record. This
+is the development path used by `revision materialize --upload`:
 
 ```console
-# empty — files arrive by writes:
-$ graphenectl apply managedsource draft --spec '{"pipelineId":"perf-nightly","runtime":"go"}'
-
-# an editable COPY of git-sourced code (bytes are copied, provenance kept,
-# nothing syncs back — a deliberate divergence, not a hidden branch):
-$ graphenectl apply managedsource fix --spec '{"pipelineId":"perf-nightly","from":"gitsource/main"}'
-
-# from a local directory — bytes travel their own channel first:
-$ graphenectl source upload perf-nightly ./my-code     # prints the reference
-$ graphenectl apply managedsource local --spec '{"pipelineId":"perf-nightly","upload":"<reference>"}'
+$ graphenectl revision materialize perf-nightly --upload ./my-code
 ```
+
+`graphenectl source upload perf-nightly ./my-code` is the lower-level byte
+channel: it stores a tarball and prints a reference. It does not create a
+source record by itself.
 
 ## source — the bytes
 
 ```text
 graphenectl source files <kind/id>            # list the tree
 graphenectl source cat <kind/id> <path>       # read one file
-graphenectl source write <kind/id> <path> [--from f]   # managed only
-graphenectl source rm <kind/id> <path>                 # managed only
 graphenectl source download <kind/id> [-o out.tgz]
 graphenectl source upload <pipeline> <dir|file.tgz>
 graphenectl source runtimes
 ```
 
-The target names the source as `kind/id` (`gitsource/main`,
-`managedsource/fix`) — the client never guesses which kind a bare name
-belongs to. A managed tree is stored file by file (content-addressed
-blobs plus an immutable index), so a write stores one blob and one
-index — never a repack of the whole project.
+The target names the source as `kind/id` (`gitsource/main`) — the client never
+guesses which kind a bare name belongs to. `source runtimes` lists what this
+installation can build. Go 1.26 is built in; administrators may add build
+runtimes explicitly, but that does not provide another language's Graphene
+SDK.
 
-Generations come free from that: the record keeps its recent history,
-and going back moves **forward** — the old tree becomes a new
-generation:
+Each successful Git fetch updates the source record's resolved commit, tree
+digest, and generation:
 
 ```console
-$ graphenectl get managedsource/fix -o json --jq .resource.state.generation
+$ graphenectl get gitsource/main -o json --jq .resource.state.generation
 4
-$ graphenectl invoke managedsource fix revert --data '{"generation":2}'
 ```
 
 ## revision — build and draft-run

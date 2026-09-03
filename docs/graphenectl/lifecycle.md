@@ -106,7 +106,6 @@ $ graphenectl invoke pipeline perf-nightly activate --data '{"revisionId":"a9bf6
 $ graphenectl invoke gitsource main sync
 {"treeDigest":"sha256:2a5531…","commit":"4f2b8f98…","generation":2}
 
-$ graphenectl invoke managedsource fix-timeout revert --data '{"generation":2}'
 ```
 
 ## kinds
@@ -126,7 +125,6 @@ KIND            ORIGIN   APPLY  RECORDS  COMMANDS
 agent           system   *      1        entity-set-labels
 docker          brought         0        entity-set-labels
 gitsource       system   *      2        sync, entity-set-labels
-managedsource   system   *      1        write, revert, entity-set-labels
 pipeline        system   *      2        fire, publish-manifest, activate, entity-set-labels
 …
 ```

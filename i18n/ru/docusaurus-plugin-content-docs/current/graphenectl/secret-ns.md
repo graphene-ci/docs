@@ -1,73 +1,80 @@
 ---
 sidebar_position: 11
-title: "secret, ns"
-sidebar_label: secret, ns
+title: "secret, var, namespace"
+sidebar_label: secret, var, ns
 ---
 
-# secret, ns
+# secret, var, namespace
+
+Все три являются **записями**: объявляются, перечисляются, читаются и удаляются
+общими глаголами. Специальной командой остаётся только канал, по которому
+передаётся *значение* секрета.
 
 ## secret
 
+Секрет состоит из двух слоёв. **Запись** (`kind: secret`) хранит жизненный цикл
+имени, счётчик версий и историю ротаций; **значение** лежит запечатанным в value
+store сервера и не читается обратно. Через specs, logs, history и CLI проходит
+только имя.
+
 ```text
 graphenectl secret set <name> [--value <v> | --value-file <path>]
-graphenectl secret list
-graphenectl secret delete <name>
 ```
 
-Секреты живут шифрованными на сервере; **по проводам ходят только
-имена** — в спеках, логах, истории и в выводе этой CLI. Значение
-разрешает потребитель в момент использования.
-
-| Флаг | Что делает |
+| Флаг | Действие |
 |---|---|
-| `--value` | значение строкой |
-| `--value-file` | значение из файла — сырые байты, никогда не конвертируются |
-| *(ни один)* | читать значение со stdin |
-
-```console
-$ graphenectl secret set gh-token --value-file token.txt
-secret gh-token set
-```
+| `--value` | передать значение в аргументе |
+| `--value-file` | прочитать raw bytes из файла |
+| *(нет флага)* | прочитать значение из stdin |
 
 ```console
 $ pass show github | graphenectl secret set gh-token
-secret gh-token set
+secret gh-token set (version 1)
 ```
+
+Остальное выполняется общей грамматикой; удаление записи удаляет и значение:
 
 ```console
-$ graphenectl secret list
-gh-token
-kubeconfig
+$ graphenectl get secret
+$ graphenectl events secret gh-token
+$ graphenectl delete secret gh-token --wait
 ```
+
+## var
+
+`var` — видимый сосед секрета: конфигурация окружения, которой не место в коде
+пайплайна, но которая не является чувствительной. Значение хранится в записи и
+читается обратно. Params ссылаются на него как `${var:name}`; door подставляет
+значение перед валидацией запуска, а отсутствие variable останавливает submit.
 
 ```console
-$ graphenectl secret delete gh-token
-secret gh-token deleted
+$ graphenectl apply var yc-zone --spec '{"value":"ru-central1-a"}'
+$ graphenectl invoke var yc-zone set --data '{"value":"ru-central1-b"}'
+$ graphenectl get var
+$ graphenectl delete var yc-zone
 ```
 
-## ns
+## namespace
 
-```text
-graphenectl ns list
-graphenectl ns create <name> [--retention-days <n>]
-```
+Namespace Graphene — единица изоляции, симметричная namespace Temporal:
+записи, queues, visibility и дерево владения. Namespace-записи живут в
+`graphene-system`, где также находятся роли, bindings и service accounts
+инсталляции.
 
-Неймспейс graphene — единица изоляции, симметричная неймспейсу
-Temporal: записи, очереди, visibility, дерево владения — всё изолирует
-сам durable-слой. Токены скоупятся одним неймспейсом; глаголы `ns`
-требуют admin-токен.
-
-| Флаг | Дефолт | Что делает |
-|---|---|---|
-| `--retention-days` | серверный дефолт (30) | retention закрытых workflow |
+`graphene-system` защищён. `default` создаётся при первом запуске как обычный
+проектный namespace и может быть удалён; restart не пересоздаёт уже известную
+retired-запись.
 
 ```console
-$ graphenectl ns list
-default
-team-b
+$ graphenectl apply namespace team-b --spec '{"retentionDays":14}'
+$ graphenectl get namespace
+REF                        PHASE  OWNER  LABELS
+namespace/graphene-system  ready
+namespace/default          ready
+namespace/team-b           ready
+$ graphenectl delete namespace team-b --wait
 ```
 
-```console
-$ graphenectl ns create team-b --retention-days 14
-namespace team-b created
-```
+Удаление namespace выполняет **retire**: инсталляция перестаёт его обслуживать,
+но содержимое не уничтожается сразу и стареет по retention. Ни новый вызов с
+этим именем, ни restart сервера не воскрешают retired namespace.

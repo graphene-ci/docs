@@ -64,7 +64,9 @@ namespace: records, queues, visibility, the ownership tree. Namespaces
 are records too, and they live in the **system namespace**
 `graphene-system` (a container cannot hold its own declaration), which
 also holds the installation's roles, bindings and service accounts.
-`graphene-system` and `default` cannot be deleted.
+`graphene-system` is protected. `default` is created on the first boot as an
+ordinary project namespace and may be deleted; a restart does not recreate a
+known retired record.
 
 ```console
 $ graphenectl apply namespace team-b --spec '{"retentionDays":14}'

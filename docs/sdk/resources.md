@@ -1,5 +1,5 @@
 ---
-sidebar_position: 3
+sidebar_position: 4
 title: Resources & agents
 sidebar_label: Resources & agents
 ---
@@ -35,7 +35,7 @@ user-data — how the agent gets onto a machine the pipeline is about to
 create:
 
 ```go
-vm := k8slib.Resource(ctx, k8sClient, &compute.Instance{
+vm := k8slib.Resource(ctx, k8sClient, "vm-1", &compute.Instance{
 	...
 	Metadata: map[string]*string{"user-data": ptr(vmAgent.CloudInit())},
 }, k8slib.WithResourceOption[compute.Instance](pipeline.Children(vmAgent)))
@@ -82,3 +82,6 @@ pipeline.ToStand(ctx, reportArtifact)                    // lives until an expli
 ```
 
 The workflow returns immediately; the machine stays up.
+
+Ready-to-use implementations are documented in
+[Resource libraries](../libraries/index.md).

@@ -85,7 +85,7 @@ keeps `rollout` apart.
 - Common failures print a one-line `hint:` with the next step:
 
 ```console
-$ graphenectl ns list
+$ graphenectl get namespace
 graphenectl: unauthenticated: 401 Unauthorized
   hint: the token was rejected — check `graphenectl ctx show`, or re-run `graphenectl login`
 ```
@@ -104,4 +104,6 @@ graphenectl: unauthenticated: 401 Unauthorized
 | [run](run.md) | starting and following runs |
 | [pipeline & sources](pipeline.md) | the project: sources, revisions, activation |
 | [secret, var, ns](secret-ns.md) | values and namespaces as records |
+| [Access and accounts](access.md) | roles, bindings, service accounts, tokens and `whoami` |
+| [Agent shell](agent.md) | an interactive diagnostic terminal over the outbound agent session |
 | [Project commands](project.md) | `init`, `completion`, `version` |

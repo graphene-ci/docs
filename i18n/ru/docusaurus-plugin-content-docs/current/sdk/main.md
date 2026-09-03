@@ -1,5 +1,5 @@
 ---
-sidebar_position: 1
+sidebar_position: 2
 title: Main
 sidebar_label: Main
 ---
@@ -59,11 +59,17 @@ type Result struct {
 
 ## Триггеры
 
-Раны стартуют не только руками: пайплайн объявляет триггеры —
-cron-расписание или webhook. Параметры триггера — те же типизированные
-`Params`; тело запроса webhook приходит в зарезервированное поле
-`Event`, а `HookSecret` называет секрет, которым аутентифицируется
-вызывающий.
+Раны стартуют не только руками: пайплайн объявляет триггеры — cron-расписание,
+webhook или результат другого пайплайна. Параметры триггера — те же
+типизированные `Params`; тело запроса webhook приходит в зарезервированное поле
+`Event`, а `HookSecret` называет секрет аутентификации вызывающего.
+
+```go
+trigger.Upstream("baseline", trigger.OnOutcome("success"))
+```
+
+Upstream trigger — явный межпайплайновый control contract. Event называет
+upstream pipeline, run и outcome; durable data отдельно передаются артефактом.
 
 ## Concurrency
 

@@ -17,10 +17,11 @@ Namespaces are **records** (`kind: namespace`), declared and deleted
 like everything else. They live in the system namespace
 `graphene-system` — a container cannot hold its own declaration — which
 also holds the installation's roles, bindings and service accounts.
-`graphene-system` and `default` exist on every installation and cannot
-be deleted. Deleting a namespace *retires* it: the installation stops
-serving it, but its contents age out under their own retention rather
-than being destroyed.
+`graphene-system` is the protected installation namespace. `default` is
+created on the first boot as an ordinary project namespace and may be deleted.
+Deleting a namespace *retires* it: the installation stops serving it, but its
+contents age out under their own retention rather than being destroyed. A
+retired namespace stays retired across server restarts.
 
 ## Who may do what
 
