@@ -9,6 +9,7 @@ sidebar_label: run
 ```text
 graphenectl run start <pipeline> [флаги]
 graphenectl run watch <run-id> [флаги]
+graphenectl run status <run-id>
 graphenectl run result | cancel <run-id>
 graphenectl run list [флаги]
 ```
@@ -122,6 +123,24 @@ $ graphenectl run watch perf-nightly-20260821-112341 --plain
 При успехе типизированный Result печатается в stdout и код выхода 0;
 упавший, отменённый или терминированный прогон выходит с 1 и статусом
 в ошибке.
+
+## run status
+
+Показывает, что ран делает **прямо сейчас**, без инструментов Temporal. Ответ
+содержит каждую незавершённую activity, её состояние и номер попытки, последнее
+heartbeat-сообщение и его возраст, а во время retry — последнюю ошибку:
+
+```console
+$ graphenectl run status perf-nightly-20260903-112341
+run perf-nightly-20260903-112341: WORKFLOW_EXECUTION_STATUS_RUNNING
+  docker.install (started, attempt 3)
+    doing: installing packages
+    last failure: command exited with status 1
+    last heartbeat: 8s ago
+```
+
+`status` отвечает кратко на вопрос «почему это зависло?», а `watch` показывает
+изменяющееся дерево ресурсов и хвост телеметрии.
 
 ## run result
 

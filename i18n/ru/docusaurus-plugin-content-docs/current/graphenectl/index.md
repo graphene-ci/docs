@@ -9,7 +9,10 @@ sidebar_label: Обзор
 `graphenectl` — управляющая CLI инсталляции graphene. Она работает с
 **записями**: ресурсами и их пятью измерениями, прогонами, секретами,
 неймспейсами, контекстами подключения. Позиция и грамматика — как у
-kubectl: сначала глагол, потом kind.
+kubectl: сначала глагол, потом kind. Собственного закрытого словаря у
+клиента нет: доступные kinds и команды он получает из словаря
+инсталляции, поэтому completion и формы следуют за сервером без
+пересборки клиента.
 
 Чего она сознательно **не** делает: не собирает, не пушит и не
 запускает *ваш* пайплайн из исходников. Бинарь пайплайна управляет
@@ -50,8 +53,9 @@ $ source <(graphenectl completion bash)     # zsh и fish: см. Проектн�
 
 ```text
 graphenectl <глагол> <kind> [id] [флаги]   # записи
+graphenectl <kind>/<id> <измерение> [-f]   # наблюдение от ресурса
 graphenectl run <lifecycle-глагол> ...     # жизненный цикл прогона
-graphenectl <существительное> <глагол> ... # ctx, secret, ns, pipeline
+graphenectl <существительное> <глагол> ... # ctx, secret, source, revision, account
 ```
 
 Цель-запись пишется двумя словами или одним ref:
@@ -63,7 +67,7 @@ $ graphenectl get docker-volume/my-vol     # то же самое
 
 Прогон — такая же запись, kind `run`: `get run`, `get run <id>`,
 `events run <id>` работают. Под `run` живут только lifecycle-глаголы
-(`start`, `watch`, `result`, `cancel`, `list`) — как kubectl держит
+(`start`, `watch`, `result`, `cancel`, `list`, `status`) — как kubectl держит
 `rollout` отдельно.
 
 ## Соглашения
@@ -78,7 +82,7 @@ $ graphenectl get docker-volume/my-vol     # то же самое
 - Частые отказы печатают однострочный `hint:` со следующим шагом:
 
 ```console
-$ graphenectl ns list
+$ graphenectl get namespace
 graphenectl: unauthenticated: 401 Unauthorized
   hint: the token was rejected — check `graphenectl ctx show`, or re-run `graphenectl login`
 ```
@@ -93,8 +97,10 @@ graphenectl: unauthenticated: 401 Unauthorized
 | [get](get.md) | списки записей и чтение одной |
 | [Наблюдение](observe.md) | `events`, `logs`, `metrics`, `trace` |
 | [tree](tree.md) | дерево владения |
-| [Глаголы жизненного цикла](lifecycle.md) | `delete`, `transfer`, `invoke` |
+| [Глаголы жизненного цикла](lifecycle.md) | `apply`, `delete`, `transfer`, `invoke`, `kinds` |
 | [run](run.md) | запуск и наблюдение прогонов |
-| [pipeline](pipeline.md) | запись пайплайна |
-| [secret, ns](secret-ns.md) | секреты и неймспейсы |
+| [pipeline и sources](pipeline.md) | исходники, ревизии и активация |
+| [secret, var, ns](secret-ns.md) | значения и неймспейсы как записи |
+| [Доступ и accounts](access.md) | роли, bindings, service accounts, токены и `whoami` |
+| [Shell на агенте](agent.md) | интерактивная диагностика через исходящую сессию агента |
 | [Проектные команды](project.md) | `init`, `completion`, `version` |

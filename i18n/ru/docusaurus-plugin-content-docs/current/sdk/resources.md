@@ -1,5 +1,5 @@
 ---
-sidebar_position: 3
+sidebar_position: 4
 title: Ресурсы и агенты
 sidebar_label: Ресурсы и агенты
 ---
@@ -34,7 +34,7 @@ bareAgent := pipeline.NewAgentViaSSH(ctx, "bare-1", pipeline.SSHInstall{
 агент попадает на машину, которую пайплайн вот-вот создаст:
 
 ```go
-vm := k8slib.Resource(ctx, k8sClient, &compute.Instance{
+vm := k8slib.Resource(ctx, k8sClient, "vm-1", &compute.Instance{
 	...
 	Metadata: map[string]*string{"user-data": ptr(vmAgent.CloudInit())},
 }, k8slib.WithResourceOption[compute.Instance](pipeline.Children(vmAgent)))
@@ -79,3 +79,6 @@ pipeline.ToStand(ctx, reportArtifact)                    // живёт до яв
 ```
 
 Workflow возвращается сразу; машина остаётся жить.
+
+Готовые реализации описаны в разделе
+[Библиотеки ресурсов](../libraries/index.md).

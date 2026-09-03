@@ -9,6 +9,7 @@ sidebar_label: run
 ```text
 graphenectl run start <pipeline> [flags]
 graphenectl run watch <run-id> [flags]
+graphenectl run status <run-id>
 graphenectl run result | cancel <run-id>
 graphenectl run list [flags]
 ```
@@ -122,6 +123,24 @@ $ graphenectl run watch perf-nightly-20260821-112341 --plain
 On success the typed Result prints to stdout and the exit code is 0; a
 failed, canceled, or terminated run exits 1 with the status in the
 error.
+
+## run status
+
+Shows what a run is doing **right now** without opening Temporal tooling. The
+response includes every pending activity, its state and attempt, its latest
+heartbeat detail and age, and the last failure when a retry is in progress:
+
+```console
+$ graphenectl run status perf-nightly-20260903-112341
+run perf-nightly-20260903-112341: WORKFLOW_EXECUTION_STATUS_RUNNING
+  docker.install (started, attempt 3)
+    doing: installing packages
+    last failure: command exited with status 1
+    last heartbeat: 8s ago
+```
+
+Use `status` for the compact “why is this stuck?” answer; use `watch` for the
+full changing resource tree and telemetry tail.
 
 ## run result
 

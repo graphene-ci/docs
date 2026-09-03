@@ -1,5 +1,5 @@
 ---
-sidebar_position: 4
+sidebar_position: 5
 title: Артефакты и секреты
 sidebar_label: Артефакты и секреты
 ---

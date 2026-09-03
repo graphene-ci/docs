@@ -1,5 +1,5 @@
 ---
-sidebar_position: 1
+sidebar_position: 2
 title: Main
 sidebar_label: Main
 ---
@@ -60,11 +60,18 @@ references.
 
 ## Triggers
 
-Runs start not only by hand: the pipeline declares its triggers —
-a cron schedule or a webhook. Trigger params are the same typed
-`Params`; a webhook's request body arrives in the reserved `Event`
-field, and `HookSecret` names the secret that authenticates the
-caller.
+Runs start not only by hand: the pipeline declares its triggers — a cron
+schedule, a webhook, or the outcome of another pipeline. Trigger params are the
+same typed `Params`; a webhook's request body arrives in the reserved `Event`
+field, and `HookSecret` names the secret that authenticates the caller.
+
+```go
+trigger.Upstream("baseline", trigger.OnOutcome("success"))
+```
+
+An upstream trigger is an explicit cross-pipeline control contract. The event
+identifies the upstream pipeline, run, and outcome; durable data travels
+separately through an artifact.
 
 ## Concurrency
 
