@@ -85,3 +85,7 @@ The concurrency policy governs AUTOMATIC starts:
 
 A manual start against a live run under `Queue` is refused with a
 clear error.
+
+## Local tests
+
+See [Local tests](testing.md) for fixtures, dependency adapters and pipeline assertions.

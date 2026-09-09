@@ -69,3 +69,7 @@ survive its run.
 When the agent is owned by the run, Docker resources become its children. On
 an attached agent they stay owned by the run: foreign resources cannot be made
 responsible for your declarations.
+
+## Local tests
+
+See [Local tests](../sdk/testing.md) for fixtures, dependency adapters and pipeline assertions.
