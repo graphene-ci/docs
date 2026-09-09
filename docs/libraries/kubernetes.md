@@ -67,3 +67,7 @@ moving generated ids through workflow history.
 The current project has unit coverage for the library but no shipped live-kind
 cluster conformance suite. Treat provider behavior as part of your pipeline's
 tested contract.
+
+## Local tests
+
+See [Local tests](../sdk/testing.md) for fixtures, dependency adapters and pipeline assertions.
