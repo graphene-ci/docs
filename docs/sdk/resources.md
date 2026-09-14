@@ -81,7 +81,10 @@ pipeline.ToStand(ctx, vm, pipeline.KeepFor(params.Keep)) // TTL bounds the stay
 pipeline.ToStand(ctx, reportArtifact)                    // lives until an explicit delete
 ```
 
-The workflow returns immediately; the machine stays up.
+The workflow can return after the transfer completes; the machine stays up.
+Ownership transfer emits activity heartbeats while waiting for the resource
+entity, including during creation. Cancellation and activity deadlines still
+bound the wait, and command errors propagate to the caller.
 
 Ready-to-use implementations are documented in
 [Resource libraries](../libraries/index.md).
