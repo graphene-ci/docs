@@ -57,7 +57,9 @@ restart. The connection then converges again.
 
 The agent runs as root when it drives `runc`. Each machine/run pair receives a
 worker container with the host mounted at `/host`; `machine.Command` acts on the
-host filesystem. Packaging is not isolation. Interactive PTY should run as
+host filesystem and mount namespace. Executors preserve the agent's permitted
+capabilities within its bounding set and device access within parent cgroup
+limits. Packaging is not isolation. Interactive PTY should run as
 `graphene-run`; an empty PTY user grants a root shell and is logged as a warning.
 
 ## Health and diagnostics
