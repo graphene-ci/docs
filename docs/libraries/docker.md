@@ -30,6 +30,9 @@ package manager, then publishes capability `docker`. `Build` uses the machine's
 Buildx/BuildKit and returns the digest and tags. Paths must be valid on the
 machine; `machine.Workspace()` is the shared same-path location.
 
+The upstream installer is limited to three minutes, including child downloads;
+on failure or timeout, installation falls back to the distribution package.
+
 ## Container
 
 ```go

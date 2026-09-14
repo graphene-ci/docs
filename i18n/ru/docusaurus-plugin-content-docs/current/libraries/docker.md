@@ -30,6 +30,9 @@ build, err := activity.Activity(ctx, agent, dockerlib.Build(dockerlib.BuildSpec{
 машины и возвращает digest и tags. Пути должны быть действительны на машине;
 `machine.Workspace()` — общий same-path каталог.
 
+Внешний установщик ограничен тремя минутами, включая дочерние загрузки;
+при ошибке или таймауте используется пакет дистрибутива.
+
 ## Container
 
 ```go

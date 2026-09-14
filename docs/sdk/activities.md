@@ -28,8 +28,11 @@ report, err := pipelineactivity.Activity(ctx, bareAgent,
 )
 ```
 
-The body executes in the machine container; `machine.Command` chroots
-into the host's filesystem — the executor image itself has no shell.
+The body executes in the machine container. `machine.Command` uses the host's
+shell and `nsenter` to enter the host filesystem and mount namespace. The host
+needs util-linux; the executor image needs no shell. `exec.Cmd.Dir` is preserved,
+and a Docker socket path under `/host` is translated to its host path. Mounts
+created by commands are visible to host services such as Docker.
 Declare actions unconditionally (not behind branches on runtime
 values): the recording pass sees the zero-value path.
 

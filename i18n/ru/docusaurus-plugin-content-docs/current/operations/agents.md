@@ -57,7 +57,9 @@ exchange.
 
 Для управления `runc` агент работает как root. Каждая пара machine/run получает
 worker container с host в `/host`; `machine.Command` действует на файловой
-системе хоста. Упаковка не является изоляцией. Interactive PTY должен работать
+системе и mount namespace хоста. Executor сохраняет permitted capabilities
+агента в пределах bounding set и доступ к устройствам в пределах родительского
+cgroup. Упаковка не является изоляцией. Interactive PTY должен работать
 как `graphene-run`; пустой PTY user даёт root shell и пишет warning.
 
 ## Health и диагностика
