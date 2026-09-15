@@ -32,6 +32,11 @@ machine; `machine.Workspace()` is the shared same-path location.
 
 The upstream installer is limited to three minutes, including child downloads;
 on failure or timeout, installation falls back to the distribution package.
+APT waits up to 120 seconds for a package lock held by another installer,
+including unattended upgrades on fresh machines. The timeout is passed through
+a temporary per-invocation configuration, inherited by the upstream installer
+and fallback. Existing APT settings are preserved, and the temporary file is
+removed on exit. Running package managers and their lock files are left intact.
 
 ## Container
 
