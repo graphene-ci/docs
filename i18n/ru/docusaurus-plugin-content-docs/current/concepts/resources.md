@@ -111,3 +111,10 @@ sequenceDiagram
 ```
 
 Без срока переданный ресурс живёт до явного удаления.
+
+Команды stand `accept`, `extend`, `release` возвращают `{"count": N}` —
+число удерживаемых корней после команды. Полный список и сроки находятся
+в `state.holdings`: `graphenectl get stand/<pipeline>`.
+Ответы компактны: entity переносит последние 100 ответов через Continue-as-New.
+Holdings и сроки хранения сохраняются; полный state stand по-прежнему
+ограничен лимитом размера workflow payload в Temporal.
