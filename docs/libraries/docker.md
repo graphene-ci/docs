@@ -38,6 +38,12 @@ a temporary per-invocation configuration, inherited by the upstream installer
 and fallback. Existing APT settings are preserved, and the temporary file is
 removed on exit. Running package managers and their lock files are left intact.
 
+`Install` sends a heartbeat immediately and every 15 seconds through engine
+installation and capability publication. Keep a heartbeat timeout longer than
+that interval (for example one minute), alongside a longer installation timeout.
+If a connection loses the completion report, the activity can retry after the
+heartbeat timeout; an existing engine is reused.
+
 ## Container
 
 ```go
