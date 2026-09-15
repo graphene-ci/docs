@@ -22,7 +22,8 @@ and entity correlation.
 
 `obs.RunTail(ctx, cmd, bytes)` streams stdout/stderr while retaining a bounded
 tail for the returned error. Prefer it around external commands so the failure
-reason reaches the record's logs.
+reason reaches the record's logs. Concurrent stdout and stderr writes share a
+synchronized tail buffer; their cross-stream ordering is not guaranteed.
 
 ## Metrics and spans
 
@@ -38,6 +39,14 @@ defer span.End()
 `Count` is an integer counter increment, `Gauge` records a value, and
 `Measure` records a floating-point measurement. Names should describe stable
 product signals rather than Go functions.
+
+Metric exports use OTLP requests of at most 2 MiB before compression. Large
+collections are split at resource, scope, instrument or data-point boundaries;
+each complete point retains its attributes, timestamps, histogram buckets and
+exemplars. Every request retains authentication and resource identity. Receiver
+partial rejections remain visible as export errors. A single point with metadata
+that exceeds the limit fails explicitly; points are not truncated. The exporter
+retains its 64 MiB total-collection guard and existing retry policy.
 
 ## Durable events
 
