@@ -118,3 +118,10 @@ sequenceDiagram
 
 Without a lifetime, a transferred resource lives until an explicit
 delete.
+
+Stand commands `accept`, `extend`, and `release` return `{"count": N}`,
+the number of held roots after the command. Read `state.holdings` through
+`graphenectl get stand/<pipeline>` for the full list and deadlines.
+Command responses stay small because the entity carries its last 100
+responses across Continue-as-New. Holdings and retention are unchanged;
+the full stand state is still subject to Temporal workflow payload limits.
