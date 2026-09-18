@@ -36,6 +36,22 @@ beats carry host-command output and optional Prometheus scrape samples for a
 resource on the machine. This makes library resources observable without each
 library inventing a transport.
 
+## A record's signals are its own
+
+A ref is a name, and names are reused: run after run declares `agent/db-1` or
+`docker/pg`. Each declaration is a new record, and the previous bearer of the
+name is not its past. Dimensions 3–5 are therefore bounded by the record's
+birth — the start of the first run of its workflow chain, so a long-lived
+record that has continued-as-new keeps its whole history. Logs, metrics and
+traces older than the record are not shown as its own, in `graphenectl`, in
+`run watch`, and in Studio alike.
+
+The bound carries a few seconds of slack: a signal's timestamp is set on the
+machine that emitted it, the record's birth on the server. When the birth
+cannot be established — the first run is past the namespace's retention — no
+bound is applied: showing too much is better than hiding a long-lived record's
+own history. A run's id is unique, so a run needs no bound.
+
 ## History and live follow
 
 Events come from durable workflow history. Logs, metrics, and traces first read
