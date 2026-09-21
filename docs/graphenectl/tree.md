@@ -26,7 +26,7 @@ says so instead of printing nothing.
 ```console
 $ graphenectl tree run/nightly-0917
 run/nightly-0917
-  nothing live is owned by run/nightly-0917
+└─ nothing live is owned by run/nightly-0917
 ```
 
 ## Examples
@@ -34,17 +34,20 @@ run/nightly-0917
 ```console
 $ graphenectl tree run/run-e2e
 run/run-e2e
-  agent/vm-e2e (ready)
-    docker-volume/graphene-e2e-run-e2e (ready)
-  artifact/e2e-report (ready)
+├─ agent/vm-e2e                                ready     3m12s
+│  └─ docker-volume/graphene-e2e-run-e2e       ready     2m40s
+└─ artifact/e2e-report                         ready     14s
 ```
 
 ```console
 $ graphenectl tree stand/perf-nightly
 stand/perf-nightly
-  k8s.compute…Instance/vm-1 (ready)
-    agent/edge-1 (ready)
+└─ k8s.compute…Instance/vm-1                   ready     4d1h
+   └─ agent/edge-1                             ready     4d1h
 ```
+
+Each node carries its phase and its age; the columns line up across the
+whole tree.
 
 `-o json` returns the same tree as nested nodes for scripting; see
 [Output forms](outputs.md).

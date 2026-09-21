@@ -132,11 +132,22 @@ heartbeat-сообщение и его возраст, а во время retry 
 
 ```console
 $ graphenectl run status perf-nightly-20260903-112341
-run perf-nightly-20260903-112341: WORKFLOW_EXECUTION_STATUS_RUNNING
-  docker.install (started, attempt 3)
+run perf-nightly-20260903-112341  Running
+  docker.install  started  attempt 3
     doing: installing packages
     last failure: command exited with status 1
     last heartbeat: 8s ago
+```
+
+У завершившегося рана незавершённых activity нет; `status` тогда говорит, как
+он прошёл — когда и сколько длился, сколько activity завершилось и что упало:
+
+```console
+$ graphenectl run status perf-nightly-20260902-101500
+run perf-nightly-20260902-101500  Failed
+  started 2026-09-02 10:15:00  took 1m21s
+  activities 29 completed
+  infrastructure suite failed on db-1: 1 failed, 2 passed in 17.49s
 ```
 
 `status` отвечает кратко на вопрос «почему это зависло?», а `watch` показывает
@@ -168,6 +179,8 @@ run perf-nightly-20260821-112341: cancel requested (teardown still runs)
 
 ```console
 $ graphenectl run list -p Running
-RUN     PIPELINE      STATUS   LABELS
-demo-2  perf-nightly  Running  team=perf
+RUN     PIPELINE      STATUS   STARTED  TOOK  LABELS
+demo-2  perf-nightly  Running  37s ago  37s+  team=perf
 ```
+
+`TOOK` с `+` на конце — прогон ещё идёт.

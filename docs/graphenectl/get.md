@@ -36,8 +36,11 @@ Every record in the namespace:
 $ graphenectl get all
 REF                    PHASE  OWNER        AGE    LABELS
 agent/vm-e2e           ready  run/run-e2e  3m12s  role=e2e
+
 pipeline/perf-nightly  ready               4d1h
 ```
+
+Kinds are separated by a blank line: one long column becomes groups.
 
 `all` is the installation's records; the dictionary of kinds is its own
 listing — `get kind`, or [`kinds`](lifecycle.md#kinds).
@@ -60,26 +63,26 @@ watch-demo  perf-nightly  Terminated  2h14m ago  1m48s  team=perf
 val-c       perf-nightly  Terminated  1d3h ago   42s
 ```
 
-One record in full — the header fields, then the spec and the state as
-YAML blocks:
+One record — the header fields, then the spec and the state as
+outlines. Empty fields and empty blocks are left out. A record's spec is
+whatever its kind's author made it (a docker container's is docker's
+whole `Config`), so the default view shows the first three levels and the
+first six items of a list, folds the rest into a one-line summary and
+says so; `-o yaml` is the whole record.
 
 ```console
 $ graphenectl get pipeline perf-nightly
 ref:    pipeline/perf-nightly
 phase:  ready
-owner:
-labels:
-spec:
-  {}
+age:    4d1h
 state:
   concurrency: queue
   digest: sha256:abc82597…
   image: localhost:7233/default/perf-nightly:4f925b8c6e5fff45
   manifest:
-    activities:
-    - docker.container.remove
-    - docker.container.run
-    ...
+    activities: [… 14 items]
+    params: {… 3 fields}
+… long parts are folded; -o yaml shows the whole record
 ```
 
 One run — what its listing row knows, spelled out:

@@ -68,10 +68,10 @@ retired-запись.
 ```console
 $ graphenectl apply namespace team-b --spec '{"retentionDays":14}'
 $ graphenectl get namespace
-REF                        PHASE  OWNER  LABELS
-namespace/graphene-system  ready
-namespace/default          ready
-namespace/team-b           ready
+REF                        PHASE  OWNER  AGE   LABELS
+namespace/default          ready         41d6h
+namespace/graphene-system  ready         41d6h
+namespace/team-b           ready         2s
 $ graphenectl delete namespace team-b --wait
 ```
 

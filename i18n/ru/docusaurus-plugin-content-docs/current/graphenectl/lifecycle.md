@@ -10,7 +10,7 @@ sidebar_label: Глаголы жизненного цикла
 Цель везде записывается как `<kind> <id>` или `kind/id`.
 
 Клиент не хранит собственный список kinds и команд: он читает его из записей
-`kind/*`. Поэтому kind из манифеста пайплайна появляется в completion и
+`kind/*` (см. [kinds](#kinds)). Поэтому kind из манифеста пайплайна появляется в completion и
 интерактивных формах без пересборки `graphenectl`.
 
 ## apply
@@ -62,7 +62,24 @@ graphenectl delete <kind> <id> [--wait]
 
 | Флаг | Что делает |
 |---|---|
-| `--wait` | ждать фазы `deleted` или полного исчезновения записи |
+| `--wait` | ждать фазы `deleted` или полного исчезновения записи; для run — пока он не остановится |
+
+Команда сначала смотрит, потом сигнализирует, и говорит, что нашла:
+
+```console
+$ graphenectl delete agent vm-e2e --wait
+agent/vm-e2e: deleting...
+agent/vm-e2e: deleted
+$ graphenectl delete agent vm-e2e
+agent/vm-e2e: already deleted
+$ graphenectl delete agent vm-e3e
+graphenectl: no record agent/vm-e3e
+$ graphenectl delete run watch-demo
+run/watch-demo: already finished (Completed) — nothing to cancel, the record stays as history
+```
+
+Завершившийся run — это история, а не ресурс: он уходит по retention
+namespace, а не по `delete`.
 
 ## transfer
 
@@ -109,13 +126,15 @@ graphenectl kinds [-v]
 
 ```console
 $ graphenectl kinds
-KIND            ORIGIN   APPLY  RECORDS  COMMANDS
-agent           system   *      1        entity-set-labels
-docker          brought         0        entity-set-labels
-gitsource       system   *      2        sync, entity-set-labels
-pipeline        system   *      2        fire, publish-manifest, activate, entity-set-labels
+KIND       ORIGIN   APPLY  RECORDS  COMMANDS
+agent      system   *      1        entity-set-labels
+docker     brought         0        entity-set-labels
+gitsource  system   *      2        sync, entity-set-labels
+pipeline   system   *      2        fire, publish-manifest, activate, entity-set-labels
 …
 ```
+
+`-v` добавляет колонку `DESCRIPTION`: для чего нужен каждый kind.
 
 `ORIGIN brought` означает, что определение kind живёт в binary пайплайна.
 Сервер показывает и маршрутизирует такие записи, но исполняет их команды worker

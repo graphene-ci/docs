@@ -13,6 +13,7 @@ default table and names the other forms only when one is the point.
 | Flag | Values | Default | What it does |
 |---|---|---|---|
 | `-o, --output` | `table` \| `wide` \| `name` \| `json` \| `yaml` | `table` | the shape of the answer |
+| `--color` | `auto` \| `always` \| `never` | `auto` | styling; `auto` is on for a terminal and off in a pipe, a file, or with `NO_COLOR` set |
 | `--jq <expr>` | a jq expression | — | pipe the JSON form through [gojq](https://github.com/itchyny/gojq); implies JSON |
 | `-w, --watch` | bool | off | watch a listing: the snapshot, then only changes |
 | `--chunk-size <n>` | int | `500` | list page size; the pages walk invisibly; `0` — one unpaginated request |
@@ -132,3 +133,33 @@ invisibly: the pages accumulate into one reply for every output form,
 $ graphenectl get run --chunk-size 100 -o name | wc -l
 1187
 ```
+
+## Color
+
+graphenectl is plain text: no screen takeover, every view pipes, greps
+and scrolls. On a terminal it is styled by **meaning**:
+
+| Color | Means |
+|---|---|
+| green | fine — `ready`, `Completed`, a completed activity |
+| yellow | moving — `creating`, `Running`, a retry attempt, a warning |
+| red | wrong — `failed`, `Failed`, `TimedOut`, an error line |
+| purple | stopping — `deleting`, `Canceled`, `Terminated` |
+| gray | over or secondary — `deleted`, a kind prefix, labels, axes |
+
+Color is a property of the destination, so a script never strips escape
+codes: in a pipe or a file there are none. `--color always` forces
+styling (for `less -R`), `--color never` or `NO_COLOR=1` turns it off.
+Only the eight basic colors are used — they follow the terminal's theme.
+
+A table fits the terminal by cutting its one unbounded column (labels, a
+metric's series) and marking the cut with `…`; in a pipe nothing is cut.
+
+## Exit codes
+
+| Code | Means |
+|---|---|
+| `0` | done — an empty answer about something that exists included |
+| `1` | the command failed: a bad flag, a refused request, the network |
+| `2` | there is no such thing: `no record <ref>`, `no run <id>` |
+| `3` | the command worked, the **run** did not: `run start --watch` and `run watch` of a run that ended any way but `Completed` |
