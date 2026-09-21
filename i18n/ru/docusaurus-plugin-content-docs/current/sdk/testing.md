@@ -147,7 +147,7 @@ Crossplane и выданные провайдером идентификатор
 | Поверхность | Что проверяет или возвращает |
 |---|---|
 | `Resource(ref)` | Копию записи: owner, phase, spec, state, agent и flows |
-| `Calls()` | Имена activities, очереди, сериализованные аргументы и виртуальное время |
+| `Calls()` | Каждая отправленная activity с её исходом: имя, очередь, сериализованные аргументы, виртуальное время, результат или ошибка и причинный порядковый номер |
 | `Events()` | Порядок declare, ready, transfer и delete |
 | `Outcome("run/test-<pipeline>")` | Итог cleanup: success, failure или canceled |
 | `AssertOwner(t, ref, owner)` | Ресурс жив и принадлежит ожидаемому владельцу |
@@ -164,8 +164,42 @@ transfer на stand. Точечный transfer через `Children` меняе�
 
 `Advance` накопительный и доступен только после завершения workflow. Он двигает
 модель, а не настоящий stand workflow. Внутри workflow используйте таймеры и
-callbacks Temporal. `Calls` записывает dispatch, а не каждую попытку ретрая;
-проверять попытки нужно через mock expectations или activity listeners Temporal.
+callbacks Temporal.
+
+### Исходы activities в `Calls`
+
+На большинство activities симулятор отвечает сам — `Handle`, библиотечные
+адаптеры, `server.*` — и стоит последним в цепочке interceptor'ов, поэтому ни
+один другой interceptor и ни один activity listener не видит, чем они
+закончились. Исход читается из `Calls` — одинаково для собственных handler'ов
+симулятора и для mock'ов:
+
+| Поле | Смысл |
+|---|---|
+| `Name`, `TaskQueue`, `Args`, `Time` | отправка: что, куда, с какими сериализованными аргументами, в какое виртуальное время |
+| `Seq` | порядок отправки |
+| `Done` | виртуальное время, когда future завершился; ноль, пока вызов не закончен — таким его оставляет ран, завершившийся раньше |
+| `DoneSeq` | порядок завершения — в **том же счётчике**, что и `Seq` |
+| `Result` | JSON-результат при успехе; пуст у activity, возвращающей только ошибку |
+| `Err` | текст ошибки, `""` при успехе |
+| `Canceled` | future завершился отменой (`Err` при этом тоже заполнен) |
+
+Пока выполняется workflow task, виртуальное время стоит, поэтому у многих
+событий одно и то же `Time`. Счётчик у `Seq` и `DoneSeq` общий именно для
+этого: `a.DoneSeq < b.Seq` — `a` закончилась до отправки `b`, `b.Seq <
+a.DoneSeq` — они выполнялись одновременно.
+
+```go
+for _, call := range world.Calls() {
+	if call.Name == "docker.job" && call.Err != "" {
+		t.Logf("%s failed after %s: %s", call.Name, call.Done.Sub(call.Time), call.Err)
+	}
+}
+```
+
+Отправка — это один `Call`, сколько бы ни было ретраев: попытки происходят под
+future, а записан итоговый исход. Отдельные попытки проверяются через mock
+expectations Temporal.
 
 ## Полный пример и локальные checkout
 

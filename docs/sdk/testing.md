@@ -147,7 +147,7 @@ provider-generated ids must be represented by fixtures.
 | Surface | What it checks or returns |
 |---|---|
 | `Resource(ref)` | Detached record including owner, phase, spec, state, agent and flows |
-| `Calls()` | Dispatched activity names, queues, serialized arguments and virtual times |
+| `Calls()` | Every dispatched activity with its outcome: name, queue, serialized arguments, virtual times, result or error, and a causal sequence number |
 | `Events()` | Declaration, readiness, transfer and deletion order |
 | `Outcome("run/test-<pipeline>")` | Cleanup outcome: success, failure or canceled |
 | `AssertOwner(t, ref, owner)` | The resource is live under the expected owner |
@@ -163,8 +163,41 @@ is removed when no live artifact in the world references it.
 
 `Advance` is cumulative and only available after workflow completion. It advances
 the model, not a real stand workflow. During a workflow, use Temporal timers and
-callbacks. `Calls` records dispatches, not each retry attempt; use Temporal mock
-expectations or activity listeners to assert attempts.
+callbacks.
+
+### Reading activity outcomes from `Calls`
+
+The simulator answers most activities itself — `Handle`, the library adapters,
+`server.*` — and it stands last in the interceptor chain, so no other
+interceptor or activity listener sees those activities end. `Calls` is where
+the outcome is read, for the simulator's own handlers and for mocks alike:
+
+| Field | Meaning |
+|---|---|
+| `Name`, `TaskQueue`, `Args`, `Time` | the dispatch: what, where, with which serialized arguments, at which virtual time |
+| `Seq` | order of the dispatch |
+| `Done` | virtual time the future settled; zero while the call is pending — a run that ended first leaves it so |
+| `DoneSeq` | order of the completion, in the **same counter** as `Seq` |
+| `Result` | the JSON payload on success; empty for an activity that returns only an error |
+| `Err` | the failure message, `""` on success |
+| `Canceled` | the future ended by cancellation (`Err` is set too) |
+
+Virtual time stands still while a workflow task runs, so many events carry one
+`Time`. `Seq` and `DoneSeq` share a counter precisely for that: `a.DoneSeq <
+b.Seq` means `a` ended before `b` was sent, `b.Seq < a.DoneSeq` means they were
+in flight together.
+
+```go
+for _, call := range world.Calls() {
+	if call.Name == "docker.job" && call.Err != "" {
+		t.Logf("%s failed after %s: %s", call.Name, call.Done.Sub(call.Time), call.Err)
+	}
+}
+```
+
+A dispatch is one `Call` whatever its retries: attempts happen under the
+future, and the recorded outcome is the final one. Use Temporal mock
+expectations to assert individual attempts.
 
 ## Full example and development checkouts
 
