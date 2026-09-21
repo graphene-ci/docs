@@ -103,7 +103,15 @@ the pipeline decides what its status means. The activity fails only when the
 container could not be run at all; when the image is missing, the error carries
 the failed pull's own cause.
 
-Every output line is also a log record of the run (`graphenectl logs run <id>`).
+Every output line is also a log record of the run (`graphenectl logs run <id>`),
+stamped with the job's name and the `stream` it came from. Stdout and stderr
+assemble their lines separately, so an unfinished line of one never splices
+into the other; the log file and `Tail` stay the merged output as Docker
+delivered it. The stream is **not** a severity — plenty of tools log ordinary
+progress to stderr, and pytest prints its failures to stdout — so every line is
+recorded at the same level. What does carry a severity is the job's own word: a
+non-zero exit adds one **warning** record, `job <name> exited with status <n>`.
+
 The job replaces a leftover container of the same name and removes its own
 container on every exit path, cancellation included; `AutoRemove` is cleared so
 the exit status is never lost to Docker's own removal. Whether a second

@@ -91,6 +91,13 @@ body. A warning is yellow and an error red **as a whole line**: in a
 scroll of output they must not look like the rest. `-o wide` appends
 every attribute of the record.
 
+A tool's output carries no severity of its own — pytest, a compiler, a
+shell script are all recorded at one level. There the level stays what
+the emitter said and the **telling words** are marked instead: `FAILED`,
+`ERROR`, `Traceback`, `2 failed` in red, `WARNING`, `3 warnings` in
+yellow, `PASSED`, `3 passed` in green, and a pytest `E   …` explanation
+red as a whole.
+
 For a run this includes the orchestrator container's own stdout — the
 raw inside of the worker, tailed by the server.
 
