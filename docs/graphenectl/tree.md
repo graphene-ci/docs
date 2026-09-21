@@ -7,15 +7,27 @@ sidebar_label: tree
 # tree
 
 ```text
-graphenectl tree <owner-ref>
+graphenectl tree [owner-ref]
 ```
 
 The ownership tree under one owner: the same recursive `EntityOwner`
 walk that cascade deletion uses, read-only. It answers "what dies with
 this owner".
 
-The one argument is a full owner ref — `run/x`, `stand/p`,
-`agent/vm-1` (an agent owns the containers on its machine).
+The argument is a full owner ref — `run/x`, `stand/p`, `agent/vm-1`
+(an agent owns the containers on its machine). With no argument the
+command prints the forest's roots: every record nobody owns, each with
+its subtree. Nodes come in ref order; the dictionary of kinds stays out
+of the roots — it is [`kinds`](lifecycle.md#kinds).
+
+The tree is of **live** records: an owner whose children are all gone
+says so instead of printing nothing.
+
+```console
+$ graphenectl tree run/nightly-0917
+run/nightly-0917
+  nothing live is owned by run/nightly-0917
+```
 
 ## Examples
 

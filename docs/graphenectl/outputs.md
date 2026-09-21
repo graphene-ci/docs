@@ -21,19 +21,25 @@ default table and names the other forms only when one is the point.
 
 ```console
 $ graphenectl get run -p Terminated
-RUN          PIPELINE      STATUS      LABELS
-watch-demo   perf-nightly  Terminated
-val-c        perf-nightly  Terminated
+RUN         PIPELINE      STATUS      STARTED    TOOK   LABELS
+watch-demo  perf-nightly  Terminated  2h14m ago  1m48s  team=perf
+val-c       perf-nightly  Terminated  1d3h ago   42s
 ```
+
+Rows come in a stable order — records by ref, runs newest first — and
+labels in key order. The `LABELS` column shows the labels a person set;
+the installation's own (`graphene.io/…`: the image, the trigger, the run)
+appear with `-o wide` and in `json`/`yaml`.
 
 ## `-o wide` — more columns
 
-Records gain the pending-commands counter and the deletion mark:
+Records gain the pending-commands counter and the deletion mark, and
+`LABELS` carries the installation's own labels too:
 
 ```console
-$ graphenectl get pipeline -o wide
-REF                    PHASE  OWNER  PENDING  DELETING  LABELS
-pipeline/perf-nightly  ready         0        false
+$ graphenectl get agent -o wide
+REF           PHASE  OWNER        AGE    PENDING  DELETING  LABELS
+agent/vm-e2e  ready  run/run-e2e  3m12s  0        false     graphene.io/run=run-e2e,role=e2e
 ```
 
 ## `-o name` — refs only, xargs-ready
@@ -102,7 +108,8 @@ $ graphenectl events run demo --jq 'select(.kind == "activity-failed")'
 ## `-w` — watching a listing
 
 The first frame prints in full, then only rows that appeared, changed,
-or went away (marked `deleted`):
+or went away (marked `deleted`). A watch reports changes, so the columns
+that tick on their own (`AGE`, `STARTED`, `TOOK`) stay out of it:
 
 ```console
 $ graphenectl get run -w

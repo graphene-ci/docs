@@ -68,7 +68,24 @@ resources down on the way out.
 
 | Flag | What it does |
 |---|---|
-| `--wait` | block until the record is `deleted` or gone entirely |
+| `--wait` | block until the record is `deleted` or gone entirely; for a run — until it stopped |
+
+The command looks before it signals, and says what it found:
+
+```console
+$ graphenectl delete agent vm-e2e --wait
+agent/vm-e2e: deleting...
+agent/vm-e2e: deleted
+$ graphenectl delete agent vm-e2e
+agent/vm-e2e: already deleted
+$ graphenectl delete agent vm-e3e
+graphenectl: no record agent/vm-e3e
+$ graphenectl delete run watch-demo
+run/watch-demo: already finished (Completed) — nothing to cancel, the record stays as history
+```
+
+A finished run is history, not a resource: it leaves with the
+namespace's retention, not with `delete`.
 
 ## transfer
 
@@ -121,13 +138,15 @@ records live).
 
 ```console
 $ graphenectl kinds
-KIND            ORIGIN   APPLY  RECORDS  COMMANDS
-agent           system   *      1        entity-set-labels
-docker          brought         0        entity-set-labels
-gitsource       system   *      2        sync, entity-set-labels
-pipeline        system   *      2        fire, publish-manifest, activate, entity-set-labels
+KIND       ORIGIN   APPLY  RECORDS  COMMANDS
+agent      system   *      1        entity-set-labels
+docker     brought         0        entity-set-labels
+gitsource  system   *      2        sync, entity-set-labels
+pipeline   system   *      2        fire, publish-manifest, activate, entity-set-labels
 …
 ```
+
+`-v` adds a `DESCRIPTION` column: what each kind is for.
 
 `ORIGIN brought` marks kinds whose definitions live in a pipeline's
 binary (docker, k8s resources): the server lists, shows and commands

@@ -34,10 +34,13 @@ Every record in the namespace:
 
 ```console
 $ graphenectl get all
-REF                    PHASE  OWNER  LABELS
-pipeline/perf-nightly  ready
-agent/vm-e2e           ready         role=e2e,graphene.io/run=run-e2e
+REF                    PHASE  OWNER        AGE    LABELS
+agent/vm-e2e           ready  run/run-e2e  3m12s  role=e2e
+pipeline/perf-nightly  ready               4d1h
 ```
+
+`all` is the installation's records; the dictionary of kinds is its own
+listing — `get kind`, or [`kinds`](lifecycle.md#kinds).
 
 One kind, filtered and watched:
 
@@ -52,9 +55,9 @@ Runs by status:
 
 ```console
 $ graphenectl get run -p Terminated
-RUN          PIPELINE      STATUS      LABELS
-watch-demo   perf-nightly  Terminated
-val-c        perf-nightly  Terminated
+RUN         PIPELINE      STATUS      STARTED    TOOK   LABELS
+watch-demo  perf-nightly  Terminated  2h14m ago  1m48s  team=perf
+val-c       perf-nightly  Terminated  1d3h ago   42s
 ```
 
 One record in full — the header fields, then the spec and the state as
@@ -79,16 +82,49 @@ state:
     ...
 ```
 
-One run — its status:
+One run — what its listing row knows, spelled out:
 
 ```console
 $ graphenectl get run watch-demo
-Terminated
+run:      watch-demo
+pipeline: perf-nightly
+status:   Terminated
+started:  2026-08-21 11:23:41
+took:     1m48s
+image:    localhost:7233/default/perf-nightly:4f925b8c6e5fff45
+trigger:  manual
+labels:   team=perf
 ```
 
-An empty answer says so (on stderr — stdout stays clean):
+## Nothing, and no such thing
+
+A listing shows **live** records. An empty answer says so, names the
+filters that narrowed it (on stderr — stdout stays clean), and exits 0:
 
 ```console
-$ graphenectl get docker-volume
-No records found.
+$ graphenectl get docker-volume -p ready
+No live docker-volume records match phase ready.
+```
+
+A kind the installation does not have is a mistake, not an empty set —
+the command fails and offers the nearest kinds:
+
+```console
+$ graphenectl get agnt
+graphenectl: unknown kind "agnt" — did you mean agent? (`graphenectl kinds` lists them)
+```
+
+The same line is drawn everywhere: `get`, `delete`, `events`, `logs`,
+`run status`, `run result` and `run cancel` answer `no record <ref>` (or
+`no run <id>`) with a non-zero exit for a target that does not exist, and
+never an empty success.
+
+A record that finished its life is not in the listing, but can still be
+read by name — its last spec and state, with `phase: deleted`:
+
+```console
+$ graphenectl get agent vm-e2e
+ref:    agent/vm-e2e
+phase:  deleted
+...
 ```

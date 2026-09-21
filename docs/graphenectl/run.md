@@ -168,6 +168,8 @@ Sugar over `get run` with the same flags (`-p`, `-l`, `-w`,
 
 ```console
 $ graphenectl run list -p Running
-RUN     PIPELINE      STATUS   LABELS
-demo-2  perf-nightly  Running  team=perf
+RUN     PIPELINE      STATUS   STARTED  TOOK  LABELS
+demo-2  perf-nightly  Running  37s ago  37s+  team=perf
 ```
+
+`TOOK` with a trailing `+` is a run still going.
