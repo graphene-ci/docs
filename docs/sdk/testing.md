@@ -127,6 +127,13 @@ objects := k8stest.Install(world)
 Imports are `github.com/graphene-ci/library/docker/dockertest` and
 `github.com/graphene-ci/library/k8s/k8stest`.
 
+A Kubernetes object gets its observed fields from `objects.Set(ref, live)`
+or, timed, `objects.After(delay, ref, live)`. A test that does not know
+which objects a spec will declare answers them all at once with
+`objects.SetDefault(func(kind, name string, manifest map[string]any) any)`:
+the function sees the declared manifest and returns the observed fields (nil
+— nothing observed yet); a `Set` for a specific object still wins.
+
 The Docker adapter models containers, volumes and networks, preserves their
 native specs and flows, and returns deterministic fixture identifiers. Its
 `docker.install` handler publishes a Docker capability. Override an installation
@@ -146,13 +153,15 @@ provider-generated ids must be represented by fixtures.
 
 | Surface | What it checks or returns |
 |---|---|
-| `Resource(ref)` | Detached record including owner, phase, spec, state, agent and flows |
+| `Resource(ref)` | Detached record including owner, phase, spec, state, agent, flows and `From` — the run that handed it to its current owner |
+| `Resources()` | Every record the world knows, deleted ones included, ordered by ref |
+| `OnDeclare(fn)` | A hook called with each record as it is declared — connect the agent, set the object's observed state, count what a spec produced — without knowing the names in advance |
 | `Calls()` | Every dispatched activity with its outcome: name, queue, serialized arguments, virtual times, result or error, and a causal sequence number |
 | `Events()` | Declaration, readiness, transfer and deletion order |
 | `Outcome("run/test-<pipeline>")` | Cleanup outcome: success, failure or canceled |
 | `AssertOwner(t, ref, owner)` | The resource is live under the expected owner |
 | `AssertNoLeaks(t)` | No orphan, cycle or survivor under a completed run |
-| `Advance(duration)` | Advance modeled stand TTL after the root workflow completes |
+| `Advance(duration)` | Advance modeled stand TTL after the root workflow completes; during the run the TTL runs on its own in virtual time |
 
 `ToStand` moves the root of the declared dependency tree, matching the server's
 stand transfer rule. A point transfer through `Children` only reparents that
@@ -161,9 +170,16 @@ survivors remain even if later pipeline code fails. Foreign fixtures are never
 adopted or deleted by cleanup. Deleted records remain inspectable. Blob content
 is removed when no live artifact in the world references it.
 
-`Advance` is cumulative and only available after workflow completion. It advances
-the model, not a real stand workflow. During a workflow, use Temporal timers and
-callbacks.
+A stand's TTL runs in **virtual time**: a holding given away with `KeepFor`
+expires while the run still goes, the way it does on a real stand, so a run
+that sleeps past its own `KeepFor` sees the resource `deleted`. `Advance` is
+cumulative and only available after workflow completion; it covers what the
+run did not wait out and advances the model, not a real stand workflow.
+
+A run that fails keeps what it collected: the workflow error is a Temporal
+`ApplicationError` of type `pipeline.FailureType` whose details carry the
+partial result and whose cause is the pipeline's own error — `errors.Is`
+and `errors.As` see through it, `app.Details(&partial)` reads the result.
 
 ### Reading activity outcomes from `Calls`
 
