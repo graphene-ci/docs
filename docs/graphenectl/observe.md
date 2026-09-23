@@ -66,6 +66,17 @@ $ graphenectl events run logs-test-2
 On a terminal the kind is colored by how it went: scheduled and started
 yellow, completed green, failed and timed out red, canceled purple.
 
+A **milestone** the pipeline emitted (`obs.Event`) is an event of kind
+`note`: its subject is the milestone's name, its input the payload.
+`--kind` keeps only the kinds named (repeatable) and filters on the
+server — a long run's dozen milestones read without its whole history:
+
+```console
+$ graphenectl events run nightly-0917 --kind note
+14:10:02.118  note                 bench.started  {"vus":4}
+14:11:11.795  note                 stand.kept  {"root":"agent/db-1","keep":"2h"}
+```
+
 Count what failed:
 
 ```console

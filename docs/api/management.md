@@ -17,7 +17,8 @@ JSON carried as protobuf bytes. Record refs always use `kind/id`.
 | `Count` | selector or query; optional group by status | total and status groups |
 | `CountOwned` | up to 100 owner refs | live child count per owner |
 | `Get` | `ref` | complete record, including closed records |
-| `Tree` | owner ref | recursive ownership tree |
+| `GetMany` | up to 100 refs | the complete records in one call; refs that do not exist are listed in `missing`, not failed on |
+| `Tree` | owner ref, `include_deleted` | recursive ownership tree; a run's tree always includes its deleted records, any other owner's on request |
 | `Delete` | `ref` | waits for child-first finalize |
 | `Transfer` | `ref`, new owner, optional keep seconds | gives the whole subtree away |
 | `Invoke` | `ref`, command, JSON payload, optional request id | JSON command result |
@@ -38,15 +39,30 @@ one.
 | Method | Request | Result |
 |---|---|---|
 | `StartRun` | run id, pipeline, params, optional image and labels | workflow ids |
-| `GetRun` | run id | current execution status |
+| `GetRun` | run id | the run's phase |
 | `WatchRun` | run id | current status, then transitions to terminal |
-| `RunResult` | run id | waits and returns typed result JSON |
+| `RunResult` | run id | waits and returns the run's state: `result` (partial for a run that failed) and `error` |
 | `CancelRun` | run id | requests cancellation with cleanup |
-| `RunStatus` | run id | status and pending activities with attempts, failure and heartbeat |
+| `RunStatus` | run id | phase and pending activities with attempts, failure and heartbeat |
 
 An image makes the run managed: the server launches the worker. Params are
 validated against the selected pipeline or revision manifest before start.
 List runs through `ResourcesAPI.List` with kind `run`.
+
+Phases are one lowercase vocabulary for runs and records alike: a run is
+`running`, `completed`, `failed`, `canceled`, `terminated` or `timed-out`;
+a record `creating`, `ready`, `updating`, `deleting`, `deleted` or
+`failed`. A selector's `phase=` speaks the same words; `phase=deleted`
+lists records that finished their life (as far back as retention).
+
+A closed run's `state` is what its close left: `{result}` when it
+completed, `{error, result}` when it did not — the pipeline closes a
+failed run with the partial result in the failure's details, and the
+door reads it back. `RunResult` returns the same two fields.
+
+`ObserveAPI.Events` takes `kinds` to filter on the server; a milestone a
+pipeline emitted through `EventsAPI.Emit` arrives as kind `note` with the
+milestone's name as `subject` and its payload as `input`.
 
 ## RevisionsAPI
 

@@ -17,7 +17,8 @@ protobuf bytes. Ref записи всегда имеет форму `kind/id`.
 | `Count` | selector или query; optional group by status | total и группы status |
 | `CountOwned` | до 100 owner refs | число live children каждого owner |
 | `Get` | `ref` | полная запись, включая закрытую |
-| `Tree` | owner ref | рекурсивное дерево владения |
+| `GetMany` | до 100 refs | полные записи одним вызовом; несуществующие перечислены в `missing`, а не роняют вызов |
+| `Tree` | owner ref, `include_deleted` | рекурсивное дерево владения; дерево прогона всегда включает его удалённые записи, другого владельца — по запросу |
 | `Delete` | `ref` | ждёт child-first finalize |
 | `Transfer` | `ref`, new owner, optional keep seconds | отдаёт всё поддерево |
 | `Invoke` | `ref`, command, JSON payload, optional request id | JSON result команды |
@@ -37,15 +38,30 @@ System labels под `graphene.io/` нельзя задавать пользов
 | Метод | Request | Result |
 |---|---|---|
 | `StartRun` | run id, pipeline, params, optional image и labels | workflow ids |
-| `GetRun` | run id | текущий execution status |
+| `GetRun` | run id | фаза прогона |
 | `WatchRun` | run id | текущий status, затем переходы до terminal |
-| `RunResult` | run id | ждёт и возвращает typed result JSON |
+| `RunResult` | run id | ждёт и возвращает state прогона: `result` (частичный у упавшего) и `error` |
 | `CancelRun` | run id | просит cancellation с cleanup |
-| `RunStatus` | run id | status и pending activities с attempts, failure, heartbeat |
+| `RunStatus` | run id | фаза и pending activities с attempts, failure, heartbeat |
 
 Image делает run managed: worker запускает сервер. Params проверяются по
 manifest выбранного pipeline или revision до старта. Runs перечисляются через
 `ResourcesAPI.List` с kind `run`.
+
+Фазы — один строчный словарь для прогонов и записей: прогон — `running`,
+`completed`, `failed`, `canceled`, `terminated` или `timed-out`; запись —
+`creating`, `ready`, `updating`, `deleting`, `deleted` или `failed`.
+`phase=` селектора говорит теми же словами; `phase=deleted` перечисляет
+записи, закончившие жизнь (насколько назад хранит retention).
+
+`state` закрытого прогона — то, что оставило его закрытие: `{result}` у
+завершённого, `{error, result}` у незавершённого — пайплайн закрывает
+упавший прогон частичным результатом в details failure, а дверь читает его
+обратно. `RunResult` возвращает те же два поля.
+
+`ObserveAPI.Events` принимает `kinds` для фильтра на сервере; веха,
+поставленная пайплайном через `EventsAPI.Emit`, приходит как kind `note` с
+именем вехи в `subject` и payload в `input`.
 
 ## RevisionsAPI
 

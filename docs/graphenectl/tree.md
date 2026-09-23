@@ -7,7 +7,7 @@ sidebar_label: tree
 # tree
 
 ```text
-graphenectl tree [owner-ref]
+graphenectl tree [owner-ref] [--include-deleted]
 ```
 
 The ownership tree under one owner: the same recursive `EntityOwner`
@@ -20,13 +20,27 @@ command prints the forest's roots: every record nobody owns, each with
 its subtree. Nodes come in ref order; the dictionary of kinds stays out
 of the roots — it is [`kinds`](lifecycle.md#kinds).
 
-The tree is of **live** records: an owner whose children are all gone
-says so instead of printing nothing.
+The tree of a **run is always whole**: a finished run is history, and
+its topology after the teardown is what one comes to see — the machines
+and containers show with `phase: deleted`, as far back as the
+namespace's retention keeps their history.
 
 ```console
 $ graphenectl tree run/nightly-0917
 run/nightly-0917
-└─ nothing live is owned by run/nightly-0917
+├─ agent/db-1                                  deleted   2d3h
+│  └─ docker/pg                                deleted   2d3h
+└─ agent/runner-1                              deleted   2d3h
+```
+
+Every other owner's tree is of **live** records; `--include-deleted`
+adds the ones that finished their life. An owner whose children are all
+gone says so instead of printing nothing.
+
+```console
+$ graphenectl tree stand/perf-nightly
+stand/perf-nightly
+└─ nothing live is owned by stand/perf-nightly
 ```
 
 ## Examples

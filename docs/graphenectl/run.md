@@ -96,7 +96,7 @@ frame stays on screen; the exit code mirrors the terminal status.
 The panel:
 
 ```text
-run perf-nightly-20260821-1450   Running   1m42s
+run perf-nightly-20260821-1450   running   1m42s
 │
 ├─ agent/edge-1                        ready      52s
 │   ⚡ capability docker published
@@ -114,7 +114,7 @@ The same model as a plain feed:
 
 ```console
 $ graphenectl run watch perf-nightly-20260821-112341 --plain
-14:23:42  run/perf-nightly-20260821-112341 status Running
+14:23:42  run/perf-nightly-20260821-112341 status running
 14:23:42  run/perf-nightly-20260821-112341 ⚡ run-started
 14:23:44  run/perf-nightly-20260821-112341 ⚡ activity-scheduled  server.agent.declare
 14:23:46  run/perf-nightly-20260821-112341 · INFO  Started Worker ...
@@ -132,7 +132,7 @@ heartbeat detail and age, and the last failure when a retry is in progress:
 
 ```console
 $ graphenectl run status perf-nightly-20260903-112341
-run perf-nightly-20260903-112341  Running
+run perf-nightly-20260903-112341  running
   docker.install  started  attempt 3
     doing: installing packages
     last failure: command exited with status 1
@@ -144,7 +144,7 @@ when and how long, how many activities completed, and what failed:
 
 ```console
 $ graphenectl run status perf-nightly-20260902-101500
-run perf-nightly-20260902-101500  Failed
+run perf-nightly-20260902-101500  failed
   started 2026-09-02 10:15:00  took 1m21s
   activities 29 completed
   infrastructure suite failed on db-1: 1 failed, 2 passed in 17.49s
@@ -155,7 +155,18 @@ full changing resource tree and telemetry tail.
 
 ## run result
 
-Waits for the run and prints its typed Result as JSON:
+Waits for the run and prints its typed Result as JSON. A run that did
+not complete prints what it collected before it failed — the partial
+result — and the reason on stderr, exit code 3:
+
+```console
+$ graphenectl run result nightly-0917
+{"db":{"infra":{"passed":false,"diskMBps":14.7}}}
+(the result above is what the run collected before it failed)
+graphenectl: run nightly-0917: infrastructure suite failed on db-1: 1 failed, 2 passed
+```
+
+A completed run:
 
 ```console
 $ graphenectl run result run-e2e
@@ -178,9 +189,9 @@ Sugar over `get run` with the same flags (`-p`, `-l`, `-w`,
 `--chunk-size`):
 
 ```console
-$ graphenectl run list -p Running
+$ graphenectl run list -p running
 RUN     PIPELINE      STATUS   STARTED  TOOK  LABELS
-demo-2  perf-nightly  Running  37s ago  37s+  team=perf
+demo-2  perf-nightly  running  37s ago  37s+  team=perf
 ```
 
 `TOOK` with a trailing `+` is a run still going.

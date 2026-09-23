@@ -81,7 +81,7 @@ agent/vm-e2e: already deleted
 $ graphenectl delete agent vm-e3e
 graphenectl: no record agent/vm-e3e
 $ graphenectl delete run watch-demo
-run/watch-demo: already finished (Completed) — nothing to cancel, the record stays as history
+run/watch-demo: already finished (completed) — nothing to cancel, the record stays as history
 ```
 
 A finished run is history, not a resource: it leaves with the

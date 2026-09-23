@@ -7,7 +7,7 @@ sidebar_label: tree
 # tree
 
 ```text
-graphenectl tree [owner-ref]
+graphenectl tree [owner-ref] [--include-deleted]
 ```
 
 Дерево владения под одним владельцем: тот же рекурсивный обход по
@@ -20,13 +20,27 @@ graphenectl tree [owner-ref]
 поддеревом. Узлы идут в порядке ref; словарь kinds в корни не входит —
 это [`kinds`](lifecycle.md#kinds).
 
-Дерево состоит из **живых** записей: владелец, у которого не осталось
-детей, говорит об этом, а не печатает пустоту.
+Дерево **прогона всегда полное**: завершённый прогон — история, и его
+топология после сноса — ровно то, ради чего сюда приходят: машины и
+контейнеры показаны с `phase: deleted`, настолько назад, насколько
+retention namespace хранит их history.
 
 ```console
 $ graphenectl tree run/nightly-0917
 run/nightly-0917
-└─ nothing live is owned by run/nightly-0917
+├─ agent/db-1                                  deleted   2d3h
+│  └─ docker/pg                                deleted   2d3h
+└─ agent/runner-1                              deleted   2d3h
+```
+
+Дерево любого другого владельца — из **живых** записей;
+`--include-deleted` добавляет закончившие жизнь. Владелец, у которого не
+осталось детей, говорит об этом, а не печатает пустоту.
+
+```console
+$ graphenectl tree stand/perf-nightly
+stand/perf-nightly
+└─ nothing live is owned by stand/perf-nightly
 ```
 
 ## Примеры

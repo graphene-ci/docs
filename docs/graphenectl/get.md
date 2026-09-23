@@ -20,7 +20,7 @@ other (`get run`); the listing then shows run columns.
 | Flag | Type | Default | What it does |
 |---|---|---|---|
 | `-l, --selector k=v` | repeatable | — | label selector, every pair must match |
-| `-p, --phase <word>` | string | — | THE lifecycle filter: a record phase (`creating`, `ready`, `deleting`, ...) for kinds, a workflow status (`Running`, `Completed`, `Terminated`, ...) for runs |
+| `-p, --phase <word>` | string | — | THE lifecycle filter, one vocabulary for everything: a record's `creating`, `ready`, `deleting`, `deleted`; a run's `running`, `completed`, `failed`, `canceled`, `terminated`, `timed-out` |
 | `--owner <ref>` | string | — | records owned by this owner (`run/x`, `stand/p`, `agent/vm-1`) |
 | `-w, --watch` | bool | off | watch: the snapshot, then only changes — see [Output forms](outputs.md) |
 | `--chunk-size` | int | 500 | list page size — see [Output forms](outputs.md) |
@@ -57,10 +57,10 @@ docker-volume/cache-v1     ready  stand/perf-nightly  deleted
 Runs by status:
 
 ```console
-$ graphenectl get run -p Terminated
+$ graphenectl get run -p terminated
 RUN         PIPELINE      STATUS      STARTED    TOOK   LABELS
-watch-demo  perf-nightly  Terminated  2h14m ago  1m48s  team=perf
-val-c       perf-nightly  Terminated  1d3h ago   42s
+watch-demo  perf-nightly  terminated  2h14m ago  1m48s  team=perf
+val-c       perf-nightly  terminated  1d3h ago   42s
 ```
 
 One record — the header fields, then the spec and the state as
@@ -91,7 +91,7 @@ One run — what its listing row knows, spelled out:
 $ graphenectl get run watch-demo
 run:      watch-demo
 pipeline: perf-nightly
-status:   Terminated
+status:   terminated
 started:  2026-08-21 11:23:41
 took:     1m48s
 image:    localhost:7233/default/perf-nightly:4f925b8c6e5fff45
@@ -130,4 +130,27 @@ $ graphenectl get agent vm-e2e
 ref:    agent/vm-e2e
 phase:  deleted
 ...
+```
+
+## One vocabulary of phases
+
+A run's status and a record's phase are one field of one dictionary,
+lowercase: records go `creating → ready → deleting → deleted` (or
+`failed`), a run goes `running → completed | failed | canceled |
+terminated | timed-out`. The same words filter (`-p failed`), color and
+compare everywhere — Temporal's own spellings never reach the door.
+
+A run keeps what it collected. `get run <id>` of a run that did not
+complete shows its state as the error **and** the partial result:
+
+```console
+$ graphenectl get run nightly-0917 -o yaml
+resource:
+  ref: run/nightly-0917
+  phase: failed
+  state:
+    error: "infrastructure suite failed on db-1: 1 failed, 2 passed"
+    result:
+      db:
+        infra: {passed: false, diskMBps: 14.7}
 ```

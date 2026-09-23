@@ -22,10 +22,10 @@ sidebar_label: Формы вывода
 ## `-o table` — дефолт
 
 ```console
-$ graphenectl get run -p Terminated
+$ graphenectl get run -p terminated
 RUN         PIPELINE      STATUS      STARTED    TOOK   LABELS
-watch-demo  perf-nightly  Terminated  2h14m ago  1m48s  team=perf
-val-c       perf-nightly  Terminated  1d3h ago   42s
+watch-demo  perf-nightly  terminated  2h14m ago  1m48s  team=perf
+val-c       perf-nightly  terminated  1d3h ago   42s
 ```
 
 Строки идут в стабильном порядке — записи по ref, прогоны от новых к
@@ -67,7 +67,7 @@ $ graphenectl get docker-volume -o name | xargs -I{} graphenectl delete {}
 ```console
 $ graphenectl get run watch-demo -o json
 {
-  "status": "Terminated"
+  "status": "terminated"
 }
 ```
 
@@ -77,7 +77,7 @@ $ graphenectl get run watch-demo -o json
 
 ```console
 $ graphenectl get run watch-demo -o yaml
-status: Terminated
+status: terminated
 ```
 
 ## `--jq` — скриптовая форма
@@ -117,9 +117,9 @@ $ graphenectl events run demo --jq 'select(.kind == "activity-failed")'
 ```console
 $ graphenectl get run -w
 RUN          PIPELINE      STATUS      LABELS
-watch-demo   perf-nightly  Terminated
-demo-2       perf-nightly  Running
-demo-2       perf-nightly  Completed
+watch-demo   perf-nightly  terminated
+demo-2       perf-nightly  running
+demo-2       perf-nightly  completed
 ```
 
 `-w` совместим с `-o json` и `--jq`: каждое изменение приходит одним
@@ -144,10 +144,10 @@ graphenectl — это обычный текст: экран не захваты
 
 | Цвет | Значит |
 |---|---|
-| зелёный | в порядке — `ready`, `Completed`, завершённая активность |
-| жёлтый | в движении — `creating`, `Running`, повторная попытка, предупреждение |
-| красный | плохо — `failed`, `Failed`, `TimedOut`, строка ошибки |
-| фиолетовый | останавливается — `deleting`, `Canceled`, `Terminated` |
+| зелёный | в порядке — `ready`, `completed`, завершённая активность |
+| жёлтый | в движении — `creating`, `running`, повторная попытка, предупреждение |
+| красный | плохо — `failed`, `timed-out`, строка ошибки |
+| фиолетовый | останавливается — `deleting`, `canceled`, `terminated` |
 | серый | закончилось или второстепенно — `deleted`, префикс kind, лейблы, оси |
 
 Цвет — свойство места назначения, поэтому скрипту не приходится вырезать
@@ -167,4 +167,4 @@ escape-коды: в пайпе и в файле их нет. `--color always` в
 | `0` | сделано — включая пустой ответ о том, что существует |
 | `1` | команда не удалась: неверный флаг, отклонённый запрос, сеть |
 | `2` | такого нет: `no record <ref>`, `no run <id>` |
-| `3` | команда отработала, а **прогон** — нет: `run start --watch` и `run watch` прогона, который закончился иначе, чем `Completed` |
+| `3` | команда отработала, а **прогон** — нет: `run start --watch` и `run watch` прогона, который закончился иначе, чем `completed` |

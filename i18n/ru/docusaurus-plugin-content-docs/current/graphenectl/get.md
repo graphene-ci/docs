@@ -20,7 +20,7 @@ graphenectl get <kind> <id> [флаги]       # одна запись
 | Флаг | Тип | Дефолт | Что делает |
 |---|---|---|---|
 | `-l, --selector k=v` | повторяемый | — | селектор по лейблам, каждая пара должна совпасть |
-| `-p, --phase <слово>` | строка | — | ЕДИНСТВЕННЫЙ фильтр жизненного цикла: фаза записи (`creating`, `ready`, `deleting`, …) для kinds, статус workflow (`Running`, `Completed`, `Terminated`, …) для прогонов |
+| `-p, --phase <слово>` | строка | — | ЕДИНСТВЕННЫЙ фильтр жизненного цикла, один словарь для всего: у записи `creating`, `ready`, `deleting`, `deleted`; у прогона `running`, `completed`, `failed`, `canceled`, `terminated`, `timed-out` |
 | `--owner <ref>` | строка | — | записи этого владельца (`run/x`, `stand/p`, `agent/vm-1`) |
 | `-w, --watch` | bool | выкл | наблюдение: снапшот, дальше только изменения — см. [Формы вывода](outputs.md) |
 | `--chunk-size` | int | 500 | размер страницы — см. [Формы вывода](outputs.md) |
@@ -57,10 +57,10 @@ docker-volume/cache-v1     ready  stand/perf-nightly  deleted
 Прогоны по статусу:
 
 ```console
-$ graphenectl get run -p Terminated
+$ graphenectl get run -p terminated
 RUN         PIPELINE      STATUS      STARTED    TOOK   LABELS
-watch-demo  perf-nightly  Terminated  2h14m ago  1m48s  team=perf
-val-c       perf-nightly  Terminated  1d3h ago   42s
+watch-demo  perf-nightly  terminated  2h14m ago  1m48s  team=perf
+val-c       perf-nightly  terminated  1d3h ago   42s
 ```
 
 Одна запись — заголовочные поля, затем spec и state в виде структуры.
@@ -91,7 +91,7 @@ state:
 $ graphenectl get run watch-demo
 run:      watch-demo
 pipeline: perf-nightly
-status:   Terminated
+status:   terminated
 started:  2026-08-21 11:23:41
 took:     1m48s
 image:    localhost:7233/default/perf-nightly:4f925b8c6e5fff45
@@ -131,4 +131,27 @@ $ graphenectl get agent vm-e2e
 ref:    agent/vm-e2e
 phase:  deleted
 ...
+```
+
+## Один словарь фаз
+
+Статус прогона и фаза записи — одно поле одного словаря, строчными:
+запись идёт `creating → ready → deleting → deleted` (или `failed`),
+прогон — `running → completed | failed | canceled | terminated |
+timed-out`. Одни и те же слова фильтруют (`-p failed`), красят и
+сравниваются везде — собственные написания Temporal до двери не доходят.
+
+Прогон сохраняет собранное. `get run <id>` незавершённого прогона
+показывает его state как ошибку **и** частичный результат:
+
+```console
+$ graphenectl get run nightly-0917 -o yaml
+resource:
+  ref: run/nightly-0917
+  phase: failed
+  state:
+    error: "infrastructure suite failed on db-1: 1 failed, 2 passed"
+    result:
+      db:
+        infra: {passed: false, diskMBps: 14.7}
 ```

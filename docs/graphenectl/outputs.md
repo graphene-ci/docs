@@ -21,10 +21,10 @@ default table and names the other forms only when one is the point.
 ## `-o table` — the default
 
 ```console
-$ graphenectl get run -p Terminated
+$ graphenectl get run -p terminated
 RUN         PIPELINE      STATUS      STARTED    TOOK   LABELS
-watch-demo  perf-nightly  Terminated  2h14m ago  1m48s  team=perf
-val-c       perf-nightly  Terminated  1d3h ago   42s
+watch-demo  perf-nightly  terminated  2h14m ago  1m48s  team=perf
+val-c       perf-nightly  terminated  1d3h ago   42s
 ```
 
 Rows come in a stable order — records by ref, runs newest first — and
@@ -66,7 +66,7 @@ the way out instead of the base64 protojson would print:
 ```console
 $ graphenectl get run watch-demo -o json
 {
-  "status": "Terminated"
+  "status": "terminated"
 }
 ```
 
@@ -76,7 +76,7 @@ The same fields through the YAML mapping:
 
 ```console
 $ graphenectl get run watch-demo -o yaml
-status: Terminated
+status: terminated
 ```
 
 ## `--jq` — the scripting form
@@ -115,9 +115,9 @@ that tick on their own (`AGE`, `STARTED`, `TOOK`) stay out of it:
 ```console
 $ graphenectl get run -w
 RUN          PIPELINE      STATUS      LABELS
-watch-demo   perf-nightly  Terminated
-demo-2       perf-nightly  Running
-demo-2       perf-nightly  Completed
+watch-demo   perf-nightly  terminated
+demo-2       perf-nightly  running
+demo-2       perf-nightly  completed
 ```
 
 `-w` composes with `-o json` and `--jq`: every change arrives as one
@@ -141,10 +141,10 @@ and scrolls. On a terminal it is styled by **meaning**:
 
 | Color | Means |
 |---|---|
-| green | fine — `ready`, `Completed`, a completed activity |
-| yellow | moving — `creating`, `Running`, a retry attempt, a warning |
-| red | wrong — `failed`, `Failed`, `TimedOut`, an error line |
-| purple | stopping — `deleting`, `Canceled`, `Terminated` |
+| green | fine — `ready`, `completed`, a completed activity |
+| yellow | moving — `creating`, `running`, a retry attempt, a warning |
+| red | wrong — `failed`, `timed-out`, an error line |
+| purple | stopping — `deleting`, `canceled`, `terminated` |
 | gray | over or secondary — `deleted`, a kind prefix, labels, axes |
 
 Color is a property of the destination, so a script never strips escape
@@ -162,4 +162,4 @@ metric's series) and marking the cut with `…`; in a pipe nothing is cut.
 | `0` | done — an empty answer about something that exists included |
 | `1` | the command failed: a bad flag, a refused request, the network |
 | `2` | there is no such thing: `no record <ref>`, `no run <id>` |
-| `3` | the command worked, the **run** did not: `run start --watch` and `run watch` of a run that ended any way but `Completed` |
+| `3` | the command worked, the **run** did not: `run start --watch` and `run watch` of a run that ended any way but `completed` |

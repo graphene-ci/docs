@@ -62,6 +62,17 @@ $ graphenectl events run logs-test-2
 В терминале kind окрашен по исходу: scheduled и started — жёлтым,
 completed — зелёным, failed и timed out — красным, canceled — фиолетовым.
 
+**Веха**, которую поставил пайплайн (`obs.Event`), — событие kind `note`:
+subject — имя вехи, input — payload. `--kind` оставляет только названные
+kinds (повторяемый) и фильтрует на сервере — десяток вех длинного прогона
+читается без всей его history:
+
+```console
+$ graphenectl events run nightly-0917 --kind note
+14:10:02.118  note                 bench.started  {"vus":4}
+14:11:11.795  note                 stand.kept  {"root":"agent/db-1","keep":"2h"}
+```
+
 Подсчитать, что упало:
 
 ```console
