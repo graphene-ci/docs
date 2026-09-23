@@ -18,7 +18,7 @@ protobuf bytes. Ref записи всегда имеет форму `kind/id`.
 | `CountOwned` | до 100 owner refs | число live children каждого owner |
 | `Get` | `ref` | полная запись, включая закрытую |
 | `GetMany` | до 100 refs | полные записи одним вызовом; несуществующие перечислены в `missing`, а не роняют вызов |
-| `Tree` | owner ref, `include_deleted` | рекурсивное дерево владения; дерево прогона всегда включает его удалённые записи, другого владельца — по запросу |
+| `Tree` | owner ref, `include_deleted` | рекурсивное дерево владения; дерево прогона всегда включает его удалённые записи, другого владельца — по запросу; каждый узел несёт `flows` записи |
 | `Delete` | `ref` | ждёт child-first finalize |
 | `Transfer` | `ref`, new owner, optional keep seconds | отдаёт всё поддерево |
 | `Invoke` | `ref`, command, JSON payload, optional request id | JSON result команды |

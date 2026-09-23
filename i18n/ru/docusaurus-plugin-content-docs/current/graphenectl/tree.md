@@ -7,7 +7,7 @@ sidebar_label: tree
 # tree
 
 ```text
-graphenectl tree [owner-ref] [--include-deleted]
+graphenectl tree [owner-ref] [--include-deleted] [--flows]
 ```
 
 Дерево владения под одним владельцем: тот же рекурсивный обход по
@@ -62,6 +62,22 @@ stand/perf-nightly
 
 У каждого узла указаны фаза и возраст; колонки выровнены по всему
 дереву.
+
+`--flows` подвешивает под каждую запись объявленные ею рёбра — цель,
+протокол с портом, подпись — стрелками вместо ветвей; пунктирная стрелка —
+системное ребро (агент↔сервер). Это топология, в том числе завершённого
+прогона:
+
+```console
+$ graphenectl tree run/nightly-0917 --flows
+run/nightly-0917
+├─ agent/db-1                                  deleted   2d3h
+│  ⇢ graphene-server                           otlp      obs
+│  └─ docker/pg                                deleted   2d3h
+└─ agent/runner-1                              deleted   2d3h
+   └─ docker/stroppy                           deleted   2d3h
+      → agent/db-1                             tcp:5432  postgres
+```
 
 `-o json` возвращает то же дерево вложенными узлами для скриптов; см.
 [Формы вывода](outputs.md).

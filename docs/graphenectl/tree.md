@@ -7,7 +7,7 @@ sidebar_label: tree
 # tree
 
 ```text
-graphenectl tree [owner-ref] [--include-deleted]
+graphenectl tree [owner-ref] [--include-deleted] [--flows]
 ```
 
 The ownership tree under one owner: the same recursive `EntityOwner`
@@ -62,6 +62,22 @@ stand/perf-nightly
 
 Each node carries its phase and its age; the columns line up across the
 whole tree.
+
+`--flows` hangs each record's declared edges under it — the target, the
+protocol with its port, the label — arrows in place of branches; a
+dotted arrow is a system edge (agent↔server). This is the topology, of a
+finished run too:
+
+```console
+$ graphenectl tree run/nightly-0917 --flows
+run/nightly-0917
+├─ agent/db-1                                  deleted   2d3h
+│  ⇢ graphene-server                           otlp      obs
+│  └─ docker/pg                                deleted   2d3h
+└─ agent/runner-1                              deleted   2d3h
+   └─ docker/stroppy                           deleted   2d3h
+      → agent/db-1                             tcp:5432  postgres
+```
 
 `-o json` returns the same tree as nested nodes for scripting; see
 [Output forms](outputs.md).

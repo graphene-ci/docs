@@ -30,6 +30,15 @@ stand, and let Studio render the current topology. System-created virtual edges
 also expose how an agent carries commands, TTY sessions, and telemetry through
 the server.
 
+The door mirrors a record's flows into visibility (the `EntityFlows` search
+attribute, one keyword per edge) together with its owner, so every row of a
+listing or a tree carries `flows` — for a live record and for a deleted one
+alike. The topology of a finished run is read from `graphenectl tree run/<id>
+--flows` or one `Tree` call, although the state of its deleted records is gone
+with their worker. The mirror is bounded by Temporal's 2 KiB per attribute:
+some 25–50 edges on one record; a record with more keeps them all in its
+state and shows none in the mirror.
+
 Do not confuse resource flows with cross-pipeline control and data contracts:
 an upstream trigger starts another pipeline; an artifact transfers durable
 bytes. Both may be shown beside the resource topology, but they have their own

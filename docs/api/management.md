@@ -18,7 +18,7 @@ JSON carried as protobuf bytes. Record refs always use `kind/id`.
 | `CountOwned` | up to 100 owner refs | live child count per owner |
 | `Get` | `ref` | complete record, including closed records |
 | `GetMany` | up to 100 refs | the complete records in one call; refs that do not exist are listed in `missing`, not failed on |
-| `Tree` | owner ref, `include_deleted` | recursive ownership tree; a run's tree always includes its deleted records, any other owner's on request |
+| `Tree` | owner ref, `include_deleted` | recursive ownership tree; a run's tree always includes its deleted records, any other owner's on request; every node carries the record's `flows` |
 | `Delete` | `ref` | waits for child-first finalize |
 | `Transfer` | `ref`, new owner, optional keep seconds | gives the whole subtree away |
 | `Invoke` | `ref`, command, JSON payload, optional request id | JSON command result |
