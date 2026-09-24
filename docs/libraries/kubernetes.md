@@ -71,3 +71,18 @@ tested contract.
 ## Local tests
 
 See [Local tests](../sdk/testing.md) for fixtures, dependency adapters and pipeline assertions.
+
+## Installation cluster
+
+`k8slib.NewClientInCluster(opts...)` explicitly selects the run worker's
+projected ServiceAccount credentials. Configure `serviceAccountName` and RBAC
+in the installation's `managed.pod_template`. Only grant this identity to trusted
+pipeline workers. A missing or invalid `NewClientFromSecret` credential never
+falls back to the installation identity. The selected connection is retained for
+reconciliation and deletion, including deletion after a failed initialization.
+
+For externally owned configuration with its own explicit lifecycle, an activity
+may use `client.ObjectClient(ctx, object)` to obtain the native Kubernetes
+resource interface. This does not create a Graphene entity or automatic cleanup.
+Use `Resource` for run-owned objects. Resolve secrets within the activity and
+never include their contents in workflow inputs, activity results or logs.
