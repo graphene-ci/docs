@@ -38,7 +38,7 @@ one.
 
 | Method | Request | Result |
 |---|---|---|
-| `StartRun` | run id, pipeline, params, optional image and labels | workflow ids |
+| `StartRun` | run id, pipeline, params, optional image and labels | run id, workflow ids, `decision` — `started`, `exists` (the id already names this very request, nothing new began), `queued` (+ `displaced_run_id`), `replaced-previous`; another request under a taken id is `ALREADY_EXISTS` |
 | `GetRun` | run id | the run's phase |
 | `WatchRun` | run id | current status, then transitions to terminal |
 | `RunResult` | run id | waits and returns the run's state: `result` (partial for a run that failed) and `error` |

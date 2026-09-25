@@ -59,8 +59,21 @@ server's port.
 ## The run
 
 A run starts through the server. The identifier names exactly one
-run: starting it again with the same id attaches to the existing one
-instead of creating a second.
+logical execution, in every state. The same request under the same id
+— the pipeline and the params — answers `exists` and returns that run,
+open or closed, however it closed: a client whose answer was lost asks
+again and nothing starts twice. Another request under a taken id is a
+conflict (`ALREADY_EXISTS`), never a second execution; a re-run is a
+new id. The horizon of this promise is the namespace's retention of
+executions: after it, an id is a new name. Absent is said only when
+the service says so — a server that could not ask Temporal answers
+`UNAVAILABLE`, not `NOT_FOUND`.
+
+Under the pipeline's `queue` policy a firing that arrives while a run
+is live is `queued`: it has its run id at once and starts when the live
+run ends. The queue holds one firing — cron does not pile up behind a
+long run — and a newer firing displaces the older one, which is named
+in the answer and never runs.
 
 There are two ways to give a run its executor:
 

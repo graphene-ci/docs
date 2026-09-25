@@ -37,7 +37,7 @@ System labels под `graphene.io/` нельзя задавать пользов
 
 | Метод | Request | Result |
 |---|---|---|
-| `StartRun` | run id, pipeline, params, optional image и labels | workflow ids |
+| `StartRun` | run id, pipeline, params, optional image и labels | run id, workflow ids, `decision` — `started`, `exists` (id уже называет ровно этот запрос, нового не началось), `queued` (+ `displaced_run_id`), `replaced-previous`; другой запрос под занятым id — `ALREADY_EXISTS` |
 | `GetRun` | run id | фаза прогона |
 | `WatchRun` | run id | текущий status, затем переходы до terminal |
 | `RunResult` | run id | ждёт и возвращает state прогона: `result` (частичный у упавшего) и `error` |

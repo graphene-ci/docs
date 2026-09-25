@@ -29,10 +29,16 @@ submit fails immediately, field by field, not on a machine.
 |---|---|---|
 | `--params <json>` | — | typed params as inline JSON |
 | `--params-file <path>` | — | params from a JSON or YAML file; `-` reads stdin |
-| `--run-id <id>` | `<pipeline>-<timestamp>` | the run's name; the same id attaches, never forks |
+| `--run-id <id>` | `<pipeline>-<timestamp>` | the run's name; the same request under it answers `exists`, another request is refused — a re-run is a new id |
 | `--image <ref>` | the pipeline record's | worker image override |
 | `-l, --label k=v` | repeatable | run labels — the same label language records use |
 | `--watch` | off | follow the run to its end (see `run watch`) |
+
+The door's decision is printed: `started`; `already exists` when the
+same request was asked before (nothing new started, the id is printed as
+usual); `queued behind the live run` under the queue policy, naming a
+displaced firing when there was one — with `--watch` the command waits
+for the queue to start it and then follows.
 
 `--params` and `--params-file` are mutually exclusive. A YAML file
 converts to JSON on the way; durations are accepted both as `"1h"`
