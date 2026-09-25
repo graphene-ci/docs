@@ -93,7 +93,7 @@ record's `sync` command.
 |---|---|---|
 | `State` | ref | workflow status and entity record when applicable |
 | `Events` | ref, cursor, follow, optional activity id | classified complete history with raw event |
-| `Logs` | ref; since/until, limit, order, page_token, severities, stream, agent, entity, text; `query` — LogsQL inside the record, or raw without ref (admin) | records, dropped counts, a closing `page{returned, truncated, next_page_token}` |
+| `Logs` | ref; since/until, limit, order, page_token, severities, stream, agent, entity, text; `query` — LogsQL inside the record (balanced, no pipe; not with follow), or raw without ref (admin) | records, dropped counts, a closing `page{returned, truncated, next_page_token}`; the fields apply to the live tail as to the history |
 | `LogFacets` | a Logs selection, fields, limit | per field, its values with record counts |
 | `Metrics` | ref, time range, step_seconds, follow; `query` — PromQL inside the record (backend `extra_filters`), or raw without ref (admin) | snapshot JSON, live OTLP, dropped counts |
 | `Trace` | ref, follow, limit; `query` — Jaeger params inside the record, or raw without ref (admin) | snapshot JSON, live OTLP, dropped counts |

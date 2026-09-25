@@ -92,7 +92,7 @@ Files read-only. Мутация source — движение Git ref и зате�
 |---|---|---|
 | `State` | ref | workflow status и entity record, когда применимо |
 | `Events` | ref, cursor, follow, optional activity id | классифицированная полная history с raw event |
-| `Logs` | ref; since/until, limit, order, page_token, severities, stream, agent, entity, text; `query` — LogsQL внутри записи, либо raw без ref (admin) | записи, dropped, закрывающий `page{returned, truncated, next_page_token}` |
+| `Logs` | ref; since/until, limit, order, page_token, severities, stream, agent, entity, text; `query` — LogsQL внутри записи (сбалансированный, без пайпа; не вместе с follow), либо raw без ref (admin) | записи, dropped, закрывающий `page{returned, truncated, next_page_token}`; поля выборки действуют на live-хвост как на историю |
 | `LogFacets` | выборка Logs, fields, limit | по каждому полю — значения с числом записей |
 | `Metrics` | ref, time range, step_seconds, follow; `query` — PromQL внутри записи (backend `extra_filters`), либо raw без ref (admin) | snapshot JSON, live OTLP, dropped |
 | `Trace` | ref, follow, limit; `query` — параметры Jaeger внутри записи, либо raw без ref (admin) | snapshot JSON, live OTLP, dropped |

@@ -70,6 +70,15 @@ question** it is:
   parameters keep the scope's tags over the caller's. Authorized like any
   read of the record — no administrator needed.
 
+  A LogsQL filter must be closable: parentheses balanced outside string
+  literals, literals terminated, no pipe. `*) OR (…` would close the
+  fence from inside, so it is refused as an invalid argument before any
+  backend sees it; behind the fence the backend also gets the namespace
+  as its own extra filter. `--query` does not combine with `-f`: live
+  records cannot be filtered in the backend's language, so a follow
+  takes the selection flags (`--severity`, `--stream`, `--agent`,
+  `--entity`, `--text`) and applies them to the live tail too.
+
 Plus the [connection flags](common-flags.md) and the
 [output forms](outputs.md) (`--jq` runs per streamed message).
 
