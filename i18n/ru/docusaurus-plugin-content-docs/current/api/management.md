@@ -92,9 +92,17 @@ Files read-only. Мутация source — движение Git ref и зате�
 |---|---|---|
 | `State` | ref | workflow status и entity record, когда применимо |
 | `Events` | ref, cursor, follow, optional activity id | классифицированная полная history с raw event |
-| `Logs` | ref, follow, since; либо admin raw query | log records и dropped counts |
-| `Metrics` | ref, time range, follow; либо admin PromQL | snapshot JSON, live OTLP, dropped counts |
-| `Trace` | ref, follow; либо admin Jaeger query | snapshot JSON, live OTLP, dropped counts |
+| `Logs` | ref; since/until, limit, order, page_token, severities, stream, agent, entity, text; `query` — LogsQL внутри записи, либо raw без ref (admin) | записи, dropped, закрывающий `page{returned, truncated, next_page_token}` |
+| `LogFacets` | выборка Logs, fields, limit | по каждому полю — значения с числом записей |
+| `Metrics` | ref, time range, step_seconds, follow; `query` — PromQL внутри записи (backend `extra_filters`), либо raw без ref (admin) | snapshot JSON, live OTLP, dropped |
+| `Trace` | ref, follow, limit; `query` — параметры Jaeger внутри записи, либо raw без ref (admin) | snapshot JSON, live OTLP, dropped |
+
+Ошибки — коды: `INVALID_ARGUMENT` — запрос, шаг или фильтр, который отвергла
+дверь или backend (4xx); `UNAVAILABLE` — backend не ответил или ответил
+5xx; `UNIMPLEMENTED` — за измерением нет backend, либо scoped-PromQL на
+backend без `extra_filters`; `PERMISSION_DENIED` — токену нельзя читать
+запись, или raw-поверхность запросил не администратор. Пустая выборка —
+`OK` и страница с нулём записей.
 
 Raw queries бекенда доступны только admin и игнорируют record/follow. Live
 metrics и traces — сериализованные стандартные OTLP export requests.

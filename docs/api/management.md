@@ -93,9 +93,18 @@ record's `sync` command.
 |---|---|---|
 | `State` | ref | workflow status and entity record when applicable |
 | `Events` | ref, cursor, follow, optional activity id | classified complete history with raw event |
-| `Logs` | ref, follow, since; or admin raw query | log records and dropped counts |
-| `Metrics` | ref, time range, follow; or admin PromQL | snapshot JSON, live OTLP, dropped counts |
-| `Trace` | ref, follow; or admin Jaeger query | snapshot JSON, live OTLP, dropped counts |
+| `Logs` | ref; since/until, limit, order, page_token, severities, stream, agent, entity, text; `query` — LogsQL inside the record, or raw without ref (admin) | records, dropped counts, a closing `page{returned, truncated, next_page_token}` |
+| `LogFacets` | a Logs selection, fields, limit | per field, its values with record counts |
+| `Metrics` | ref, time range, step_seconds, follow; `query` — PromQL inside the record (backend `extra_filters`), or raw without ref (admin) | snapshot JSON, live OTLP, dropped counts |
+| `Trace` | ref, follow, limit; `query` — Jaeger params inside the record, or raw without ref (admin) | snapshot JSON, live OTLP, dropped counts |
+
+Errors are codes: `INVALID_ARGUMENT` for a query, step or filter the door
+or the backend refuses (4xx), `UNAVAILABLE` for a backend that did not
+answer or answered 5xx, `UNIMPLEMENTED` for a dimension without a backend
+or a scoped PromQL query on a backend without `extra_filters`,
+`PERMISSION_DENIED` for a token that may not read the record or asked for
+the raw surface without being an administrator. An empty selection is
+`OK` with a page of zero records.
 
 Raw backend queries are admin-only and ignore record/follow fields. Live
 metrics and traces are serialized standard OTLP export requests.

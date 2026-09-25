@@ -38,6 +38,31 @@ Follow работает push-потоком, не polling. Дверь серве
 | Флаг | Команды | Что делает |
 |---|---|---|
 | `-f, --follow` | все четыре | продолжать live stream до остановки |
+| `--query <expr>` | logs, metrics, trace | свой запрос на языке backend, вычисляемый **внутри записи** (ниже) |
+| `--start`, `--end` | logs, metrics | окно: RFC3339 или «столько назад» (`-2h`, `-10m`) |
+| `--step <dur>` | metrics | шаг range-запроса (`30s`, `1m`); по умолчанию диапазон/200, не меньше 15 с; не больше 11 000 точек на серию |
+| `--limit <n>` | logs | записей на страницу (по умолчанию 1000, не больше 10 000) |
+| `--desc` | logs | новые сначала |
+| `--page <token>` | logs | продолжить с токена, который напечатала прошлая страница |
+| `--severity`, `--stream`, `--agent`, `--entity`, `--text` | logs | фильтры, через AND: уровни (повторяемый), поток job, агент-источник, запись, о которой строка, текст в теле |
+| `--facets <fields>` | logs | посчитать значения этих полей в выборке вместо списка строк |
+| `--traces <n>` | trace | трейсов в snapshot (по умолчанию 20) |
+
+### Две формы запроса
+
+Каждое измерение принимает запрос на языке своего backend — LogsQL,
+PromQL, параметры поиска Jaeger — в двух формах, различающихся тем, **чей
+это вопрос**:
+
+- **Raw** — запрос сам по себе, без записи: `graphenectl metrics 'rate(...)'`.
+  Всё хранилище, поверхность администратора.
+- **Scoped** — запрос вместе с записью: `graphenectl metrics run x --query
+  'rate(stroppy_ops_total[1m])'`. Тот же язык, но дверь накладывает на него
+  скоуп записи — её namespace, метки корреляции, момент рождения — так, что
+  выражению из него не вырваться: фильтр LogsQL заключён в скобки внутри
+  скоупа, к выражению PromQL backend применяет скоуп на каждом селекторе и
+  подзапросе, у параметров Jaeger теги скоупа сильнее пользовательских.
+  Авторизуется как любое чтение записи — администратор не нужен.
 
 Также действуют [флаги подключения](common-flags.md) и
 [формы вывода](outputs.md); `--jq` выполняется для каждого сообщения потока.
@@ -84,6 +109,26 @@ $ graphenectl events run logs-test-2 --jq '.kind' | sort | uniq -c | sort -rn
 
 ## logs
 
+**Выборка**, а не хвост: окно, страница, фильтры. Записи идут от старых к
+новым (`--desc` — новые сначала), по одной странице; страницу закрывает
+строка в stderr — сколько пришло и, если в выборке есть ещё, токен
+продолжения; одинаковые timestamp между страницами не теряются.
+
+```console
+$ graphenectl logs run nightly-0917 --severity WARN,ERROR --stream stderr --start -30m --limit 200
+14:11:06.800  WRN  infra-tests │ job infra-tests exited with status 1
+14:11:08.891  ERR  bench │ connection refused
+… 200 of more; next page: --page MTc5MDA...
+$ graphenectl logs run nightly-0917 --query 'level:error AND _msg:~"timeout.*pg"'
+$ graphenectl logs run nightly-0917 --facets severity,job
+FIELD     VALUE        RECORDS
+severity  INFO              61
+          WRN                2
+
+job       infra-tests       58
+          bench              5
+```
+
 ```console
 $ graphenectl logs run logs-test-2
 20:55:58.269  INF  Started Worker Namespace default TaskQueue run/logs-test-2
@@ -112,7 +157,14 @@ $ graphenectl logs run logs-test-2
 По умолчанию печатается таблица серий с линией тренда; `-o wide` рисует
 каждую серию графиком; `-o json` возвращает стандартный PromQL range
 response как есть, `--jq` выполняется поверх него. С `-f` после snapshot
-приходят live points по мере прохождения через коллектор:
+приходят live points по мере прохождения через коллектор. `--step` задаёт
+шаг; `--query` вычисляет ваш PromQL внутри записи — включая нативные
+метрики инструмента (`stroppy_*`), в каком бы написании метки корреляции
+ни лежали в хранилище:
+
+```console
+$ graphenectl metrics run nightly-0917 --query 'rate(stroppy_ops_total[1m])' --step 30s --start -1h
+```
 
 ```console
 $ graphenectl gitsource/main metrics -f
@@ -182,8 +234,17 @@ $ graphenectl trace run logs-test-2 --jq '.data[0].spans | length'
 128
 ```
 
-Измерение без настроенного backend отвечает ясной ошибкой
-`unimplemented`, а не молчанием. Пустое измерение существующей записи
-пишет пояснение в stderr (`agent/db-1 has no log records.`, `No metrics
-recorded.`) и завершает команду с кодом 0 — stdout остаётся чистым для
-пайпов. Несуществующая запись — это `no record <ref>` и код возврата 2.
+## Что значит ответ
+
+Дверь отвечает **кодом**, а не молчанием и не одним текстом:
+
+| Ответ | Значит |
+|---|---|
+| записи, затем строка страницы в stderr | выборка; `… N of more` называет токен следующей страницы |
+| `<ref> has no log records in this selection.`, код 0 | запись есть, выборка пуста |
+| `no record <ref>`, код 2 | такой записи нет |
+| `invalid_argument` | неверен запрос, шаг или фильтр — дальше слова самого backend |
+| `unavailable` | backend не ответил или ответил 5xx |
+| `unimplemented` | за измерением нет backend, либо scoped-PromQL на backend без `extra_filters` |
+| `permission_denied` | токену нельзя читать запись, или raw-поверхность запросил не администратор |
+| `... N lines dropped` в stderr | follow сбросил строки медленному потребителю |

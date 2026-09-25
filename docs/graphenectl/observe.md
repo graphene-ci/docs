@@ -43,6 +43,32 @@ consumer sheds oldest and is told how many were dropped
 | Flag | Commands | What it does |
 |---|---|---|
 | `-f, --follow` | all four | keep streaming live entries until you stop it |
+| `--query <expr>` | logs, metrics, trace | your own query in the backend's language, evaluated **inside the record** (below) |
+| `--start`, `--end` | logs, metrics | the window: RFC3339, or a duration ago (`-2h`, `-10m`) |
+| `--step <dur>` | metrics | the range's resolution (`30s`, `1m`); default range/200, at least 15 s; at most 11 000 points per series |
+| `--limit <n>` | logs | records per page (default 1000, at most 10 000) |
+| `--desc` | logs | newest first |
+| `--page <token>` | logs | continue from the token the previous page printed |
+| `--severity`, `--stream`, `--agent`, `--entity`, `--text` | logs | filters, ANDed: severities (repeatable), a job's stream, the emitting agent, the record a line is about, a text the body contains |
+| `--facets <fields>` | logs | count the values of these fields within the selection instead of listing it |
+| `--traces <n>` | trace | traces in the snapshot (default 20) |
+
+### Two query forms
+
+Every dimension takes a query in its backend's own language — LogsQL,
+PromQL, Jaeger search parameters — in two forms that differ in **whose
+question** it is:
+
+- **Raw** — the query alone, no record: `graphenectl metrics 'rate(...)'`.
+  The whole store, an administrator's surface.
+- **Scoped** — the query with a record: `graphenectl metrics run x --query
+  'rate(stroppy_ops_total[1m])'`. The same language, but the door lays the
+  record's scope over it — its namespace, its correlation labels, its
+  birth — in a way the expression cannot escape: a LogsQL filter is
+  fenced in parentheses inside the scope, a PromQL expression gets the
+  scope applied by the backend to every selector and subquery, Jaeger
+  parameters keep the scope's tags over the caller's. Authorized like any
+  read of the record — no administrator needed.
 
 Plus the [connection flags](common-flags.md) and the
 [output forms](outputs.md) (`--jq` runs per streamed message).
@@ -88,6 +114,27 @@ $ graphenectl events run logs-test-2 --jq '.kind' | sort | uniq -c | sort -rn
 
 ## logs
 
+A **selection**, not a tail: a window, a page, filters. Records come
+oldest first (`--desc` for newest first), one page at a time; the page
+closes with a line on stderr saying how many came and, when the selection
+has more, the token that continues it — equal timestamps are never lost
+across pages.
+
+```console
+$ graphenectl logs run nightly-0917 --severity WARN,ERROR --stream stderr --start -30m --limit 200
+14:11:06.800  WRN  infra-tests │ job infra-tests exited with status 1
+14:11:08.891  ERR  bench │ connection refused
+… 200 of more; next page: --page MTc5MDA...
+$ graphenectl logs run nightly-0917 --query 'level:error AND _msg:~"timeout.*pg"'
+$ graphenectl logs run nightly-0917 --facets severity,job
+FIELD     VALUE        RECORDS
+severity  INFO              61
+          WRN                2
+
+job       infra-tests       58
+          bench              5
+```
+
 ```console
 $ graphenectl logs run logs-test-2
 20:55:58.269  INF  Started Worker Namespace default TaskQueue run/logs-test-2
@@ -117,7 +164,14 @@ raw inside of the worker, tailed by the server.
 A series table with a trend line by default; `-o wide` draws every
 series as a chart; `-o json` prints the backend's standard PromQL range
 response as-is, `--jq` runs over it. With `-f` the snapshot is followed
-by live points as they pass the collector:
+by live points as they pass the collector. `--step` sets the resolution;
+`--query` evaluates your own PromQL inside the record — the tool's native
+metrics (`stroppy_*`) included, whichever spelling of the correlation
+labels the store holds:
+
+```console
+$ graphenectl metrics run nightly-0917 --query 'rate(stroppy_ops_total[1m])' --step 30s --start -1h
+```
 
 ```console
 $ graphenectl gitsource/main metrics -f
@@ -189,8 +243,17 @@ $ graphenectl trace run logs-test-2 --jq '.data[0].spans | length'
 128
 ```
 
-A dimension without a configured backend answers with a clear
-`unimplemented` error, not silence. An empty dimension of a record that
-exists prints a note to stderr (`agent/db-1 has no log records.`, `No
-metrics recorded.`) and exits 0 — stdout stays clean for pipes. A record
-that does not exist is `no record <ref>` and exit code 2.
+## What an answer means
+
+The door answers by **code**, never by silence or by text alone:
+
+| Answer | Means |
+|---|---|
+| records, then a page line on stderr | the selection; `… N of more` names the next page token |
+| `<ref> has no log records in this selection.`, exit 0 | the record exists, the selection is empty |
+| `no record <ref>`, exit 2 | there is no such record |
+| `invalid_argument` | the query, the step or a filter is wrong — the backend's own words follow |
+| `unavailable` | the backend did not answer or answered 5xx |
+| `unimplemented` | no backend behind that dimension, or a scoped PromQL query on a backend without `extra_filters` |
+| `permission_denied` | the token may not read the record, or asked for the raw surface without being an administrator |
+| `... N lines dropped` on stderr | a follow shed lines to a slow consumer |
