@@ -36,6 +36,21 @@ beats carry host-command output and optional Prometheus scrape samples for a
 resource on the machine. This makes library resources observable without each
 library inventing a transport.
 
+## Telemetry of workload containers
+
+The tool a pipeline runs — a test suite, stroppy, a benchmark — speaks
+OpenTelemetry but knows neither the server nor a token. The executor of the
+machine role opens a local OTLP intake: one plaintext port on the loopback and
+on the docker bridge, taking gRPC and HTTP alike. The docker library puts its
+address into every container's `OTEL_EXPORTER_OTLP_ENDPOINT` (a user-set
+endpoint wins). The intake overwrites the correlation attributes —
+`graphene.namespace`, `graphene.run`, `graphene.agent`, `graphene.role=workload`
+— on every resource and forwards to the server under the executor's own
+credential, the path the executor's own telemetry takes. A workload cannot
+claim another run or namespace: whatever it wrote there is replaced. Its
+signals then answer to the run's `ref+query` like the executor's do, and
+`graphene.role` tells them apart.
+
 ## A record's signals are its own
 
 A ref is a name, and names are reused: run after run declares `agent/db-1` or

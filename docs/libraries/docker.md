@@ -64,6 +64,17 @@ name: an absent container is created and started; a stopped one is started.
 `Scrape` asks the agent to pull a Prometheus endpoint and attribute samples to
 the container record.
 
+### Telemetry from inside the container
+
+A container and a job get `OTEL_EXPORTER_OTLP_ENDPOINT` (and
+`OTEL_EXPORTER_OTLP_INSECURE=true`) in their environment unless the spec sets
+the endpoint itself. It points at the executor's local OTLP intake — on the
+docker bridge, or on the loopback for a container on the host network — which
+stamps the run on everything that arrives and forwards it into Graphene. A
+tool that speaks OpenTelemetry (a test suite, stroppy) reports into the run's
+logs, metrics and traces with no configuration; the container never sees the
+server's address or a token. See [observability](../concepts/observability.md).
+
 ## Job
 
 A job runs a container **to completion** — the one-shot counterpart of
