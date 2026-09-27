@@ -49,7 +49,7 @@ consumer sheds oldest and is told how many were dropped
 | `--limit <n>` | logs | records per page (default 1000, at most 10 000) |
 | `--desc` | logs | newest first |
 | `--page <token>` | logs | continue from the token the previous page printed |
-| `--severity`, `--stream`, `--agent`, `--entity`, `--text` | logs | filters, ANDed: severities (repeatable), a job's stream, the emitting agent, the record a line is about, a text the body contains |
+| `--severity`, `--stream`, `--agent`, `--entity`, `--text` | logs | filters, ANDed: severities (repeatable, matched regardless of case — `error`, `ERROR` and a backend's `Error` are one level; a line named only by its OTel severity number counts under its band — 17–20 is ERROR; answers spell levels in upper case), a job's stream, the emitting agent, the record a line is about, a text the body contains |
 | `--facets <fields>` | logs | count the values of these fields within the selection instead of listing it |
 | `--traces <n>` | trace | traces in the snapshot (default 20) |
 
