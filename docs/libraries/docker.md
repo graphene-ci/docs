@@ -62,7 +62,11 @@ id := web.Ready(ctx).Id
 `Config` and `Host` are Docker's native Go types. Declaration is idempotent by
 name: an absent container is created and started; a stopped one is started.
 `Scrape` asks the agent to pull a Prometheus endpoint and attribute samples to
-the container record.
+the container record. Samples are shipped as read: a counter stays a counter,
+every point carries the scrape's own time, and a series ends when its exporter
+does — `rate()` over a scraped counter sees the source's clock, not the beat's.
+The beat's own `docker.container.cpu.percent` and `docker.container.memory.bytes`
+are gauges of the same moment.
 
 ### Telemetry from inside the container
 

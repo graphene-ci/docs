@@ -33,7 +33,8 @@ $ graphenectl docker/pg-exporter trace -f
 Pipeline and server worker interceptors attach the record reference and its run,
 agent, namespace, and contour context to emitted telemetry. Agent observation
 beats carry host-command output and optional Prometheus scrape samples for a
-resource on the machine. This makes library resources observable without each
+resource on the machine, shipped as read — kind and time preserved, nothing
+re-exported after the last reading. This makes library resources observable without each
 library inventing a transport.
 
 ## Telemetry of workload containers

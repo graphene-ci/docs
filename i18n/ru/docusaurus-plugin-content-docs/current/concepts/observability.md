@@ -32,7 +32,8 @@ $ graphenectl docker/pg-exporter trace -f
 Interceptors pipeline- и server-workers добавляют к телеметрии ref записи и
 контекст её run, agent, namespace и contour. Observation beats агента переносят
 вывод host commands и необязательные Prometheus scrape samples ресурса на
-машине. Поэтому библиотечные ресурсы наблюдаемы без собственного transport в
+машине — как прочитаны: тип и время сохранены, после последнего чтения
+ничего не реэкспортируется. Поэтому библиотечные ресурсы наблюдаемы без собственного transport в
 каждой библиотеке.
 
 ## Телеметрия рабочих контейнеров
