@@ -51,6 +51,16 @@ $ graphenectl account token ci-release --ttl 24h --comment 'release job'
 Сохраните значение в secret store вызывающей системы. Нулевой TTL создаёт токен,
 действующий до явного отзыва.
 
+Токен работает на всех дверях инсталляции, включая plain-HTTP. Registry
+(`/v2/<namespace>/<pipeline>/…`, Bearer или Basic с токеном в пароле) берёт
+namespace из пути репозитория: pull образа требует `get pipeline` в нём, push —
+`create revision` или `update pipeline`; голый ping `/v2/` требует только
+известного токена, каталог для bindings закрыт. `/agent/binary` требует
+`get agent` в namespace из `X-Graphene-Namespace` (иначе default).
+Неизвестный токен получает `401` с challenge registry, известный без binding —
+`403`. Prometheus `remote_write` (`/api/v1/write`) остаётся за токенами рана и
+администратора: дверь не ставит namespace на записываемые серии.
+
 Роли, bindings, accounts, метаданные токенов и их события читаются общими
 глаголами. Значения токенов обратно не выдаются:
 

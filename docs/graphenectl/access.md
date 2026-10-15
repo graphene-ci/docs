@@ -51,6 +51,17 @@ The token value is printed once on stdout; status and the token id go to stderr.
 Store the value in the calling system's secret store. A zero TTL creates a token
 that remains valid until revoked.
 
+The token works on every door of the installation, the plain-HTTP ones
+included. The registry (`/v2/<namespace>/<pipeline>/…`, Bearer or Basic with
+the token as the password) takes the namespace from the repository path:
+pulling an image asks for `get pipeline` there, pushing one for `create
+revision` or `update pipeline`; the bare `/v2/` ping needs only a known token,
+the catalog is closed to bindings. `/agent/binary` asks for `get agent` in the
+namespace named by `X-Graphene-Namespace` (default otherwise). An unknown token
+gets `401` with the registry challenge, a known one without the binding `403`.
+Prometheus `remote_write` (`/api/v1/write`) stays with run and administrator
+tokens: the door does not stamp a namespace on written series.
+
 Roles, bindings, accounts, token metadata, and their events can be read with
 generic verbs. Token values never read back:
 
