@@ -62,6 +62,15 @@ gets `401` with the registry challenge, a known one without the binding `403`.
 Prometheus `remote_write` (`/api/v1/write`) stays with run and administrator
 tokens: the door does not stamp a namespace on written series.
 
+On the native gRPC door the token opens the worker plane's pipeline and run
+surface in the namespace named by `x-graphene-namespace` (default otherwise):
+`ManifestAPI.PublishManifest` asks for `create revision` or `update pipeline`,
+`GetPipeline` for `get pipeline`, `RunsAPI.StartRun` for `run pipeline`,
+`GetRun`, `WatchRun` and `RunResult` for `get run`. The rest of that door — the
+Temporal proxy, the agent plane, secrets, blobs, capabilities, OTLP intake —
+answers `PERMISSION_DENIED` to a binding: those calls take a run, agent or
+administrator token.
+
 Roles, bindings, accounts, token metadata, and their events can be read with
 generic verbs. Token values never read back:
 

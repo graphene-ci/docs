@@ -61,6 +61,15 @@ namespace из пути репозитория: pull образа требует
 `403`. Prometheus `remote_write` (`/api/v1/write`) остаётся за токенами рана и
 администратора: дверь не ставит namespace на записываемые серии.
 
+На нативной gRPC-двери токен открывает поверхность пайплайнов и ранов worker
+plane в namespace из `x-graphene-namespace` (иначе default):
+`ManifestAPI.PublishManifest` требует `create revision` или `update pipeline`,
+`GetPipeline` — `get pipeline`, `RunsAPI.StartRun` — `run pipeline`, `GetRun`,
+`WatchRun` и `RunResult` — `get run`. Остальное на этой двери — Temporal-прокси,
+агентская плоскость, секреты, blobs, capabilities, приём OTLP — отвечает
+binding'у `PERMISSION_DENIED`: эти вызовы требуют токена рана, агента или
+администратора.
+
 Роли, bindings, accounts, метаданные токенов и их события читаются общими
 глаголами. Значения токенов обратно не выдаются:
 
