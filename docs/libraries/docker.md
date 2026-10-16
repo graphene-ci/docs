@@ -68,6 +68,22 @@ does — `rate()` over a scraped counter sees the source's clock, not the beat's
 The beat's own `docker.container.cpu.percent` and `docker.container.memory.bytes`
 are gauges of the same moment.
 
+### Logs and the container's last words
+
+The executor follows every container's log as a stream from the moment it
+starts: each line reaches the record's logs within about a second, with
+`stream=stdout|stderr`. A broken stream — the daemon or the container
+restarting — is picked up from the last line shipped, with no line twice and
+none missed. When a container stops on its own, the stop is in the record's
+history (`container-exited` with the exit code) the moment its log ends.
+
+Before a container is removed it is retired: a last stats and scrape sample,
+then `docker stop` with a 10-second grace — SIGTERM, so the process flushes
+what it buffers (an OpenTelemetry SDK's last spans and metrics, a database's
+last log lines) — and everything it wrote after the last line shipped is read
+and shipped. The retirement is bounded to 20 seconds; a daemon that does not
+answer does not hold the teardown.
+
 ### Telemetry from inside the container
 
 A container and a job get `OTEL_EXPORTER_OTLP_ENDPOINT` (and
