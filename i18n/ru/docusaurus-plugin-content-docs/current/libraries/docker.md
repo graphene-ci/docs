@@ -53,7 +53,8 @@ web := dockerlib.Container(ctx, agent, dockerlib.Spec{
     Host: &container.HostConfig{
         RestartPolicy: container.RestartPolicy{Name: container.RestartPolicyAlways},
     },
-    Scrape: "http://localhost:9187/metrics",
+    Scrape:      "http://localhost:9187/metrics",
+    ScrapeEvery: 10 * time.Second,
 }, pipeline.WithLabels(map[string]string{"role": "frontend"}))
 
 id := web.Ready(ctx).Id
@@ -61,12 +62,31 @@ id := web.Ready(ctx).Id
 
 `Config` и `Host` — нативные Go-типы Docker. Декларация идемпотентна по имени:
 отсутствующий контейнер создаётся и запускается, остановленный — запускается.
-`Scrape` просит агент читать Prometheus endpoint и атрибутировать samples записи
-контейнера. Samples уходят как прочитаны: counter остаётся counter'ом, каждая
-точка несёт время самого scrape, серия заканчивается вместе с экспортёром —
-`rate()` по scraped counter видит часы источника, а не такта. Собственные
-`docker.container.cpu.percent` и `docker.container.memory.bytes` такта — gauges
-того же момента.
+`Scrape` просит executor читать Prometheus endpoint и атрибутировать samples
+записи контейнера. Endpoint читается с запуска контейнера каждые `ScrapeEvery`
+— 15 секунд, если не задано, и не чаще раза в секунду — своим шагом, отдельно
+от 30-секундного такта, который снимает docker stats. Samples уходят как
+прочитаны, каждая точка — со временем самого scrape, серия заканчивается вместе
+с экспортёром: `rate()` по scraped counter видит часы источника. Семейства
+сохраняют форму, в которой их хранит Prometheus, метки — без изменений:
+
+| Семейство | Уходит как |
+|---|---|
+| counter | counter |
+| gauge, untyped | gauge |
+| histogram | `<name>_bucket{le}` (кумулятивно, вместе с `le="+Inf"`), `<name>_sum`, `<name>_count` — counters |
+| gauge histogram | `<name>_bucket{le}`, `<name>_gsum`, `<name>_gcount` — gauges |
+| summary | `<name>{quantile}` — gauges; `<name>_sum`, `<name>_count` — counters |
+
+Поэтому `histogram_quantile(0.99, rate(sql_service_latency_bucket[1m]))`
+работает по scraped экспортёру как по любому Prometheus. Scrape просит
+текстовую exposition; native (sparse) histograms есть только в protobuf, так
+что уходят классические бакеты экспортёра, а native-only гистограмма уходит
+своими `_sum`, `_count` и бакетом `+Inf`. NaN или бесконечность — квантиль
+summary до первого наблюдения — не показание и пропускается. Недоступный
+endpoint — предупреждение в логе записи раз на каждую новую ошибку, а не на
+каждом шаге. Собственные `docker.container.cpu.percent` и
+`docker.container.memory.bytes` такта — gauges его момента.
 
 ### Логи и последние слова контейнера
 

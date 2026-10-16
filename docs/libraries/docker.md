@@ -53,7 +53,8 @@ web := dockerlib.Container(ctx, agent, dockerlib.Spec{
     Host: &container.HostConfig{
         RestartPolicy: container.RestartPolicy{Name: container.RestartPolicyAlways},
     },
-    Scrape: "http://localhost:9187/metrics",
+    Scrape:      "http://localhost:9187/metrics",
+    ScrapeEvery: 10 * time.Second,
 }, pipeline.WithLabels(map[string]string{"role": "frontend"}))
 
 id := web.Ready(ctx).Id
@@ -61,12 +62,31 @@ id := web.Ready(ctx).Id
 
 `Config` and `Host` are Docker's native Go types. Declaration is idempotent by
 name: an absent container is created and started; a stopped one is started.
-`Scrape` asks the agent to pull a Prometheus endpoint and attribute samples to
-the container record. Samples are shipped as read: a counter stays a counter,
-every point carries the scrape's own time, and a series ends when its exporter
-does — `rate()` over a scraped counter sees the source's clock, not the beat's.
-The beat's own `docker.container.cpu.percent` and `docker.container.memory.bytes`
-are gauges of the same moment.
+`Scrape` asks the executor to pull a Prometheus endpoint and attribute samples
+to the container record. It is pulled from the container's start every
+`ScrapeEvery` — 15 seconds when unset, never under one second — on its own
+step, apart from the 30-second beat that samples docker stats. Samples are
+shipped as read, every point at the scrape's own time, and a series ends when
+its exporter does — `rate()` over a scraped counter sees the source's clock.
+Families keep the shape Prometheus stores them in, with their labels unchanged:
+
+| Family | Shipped as |
+|---|---|
+| counter | counter |
+| gauge, untyped | gauge |
+| histogram | `<name>_bucket{le}` (cumulative, `le="+Inf"` included), `<name>_sum`, `<name>_count` — counters |
+| gauge histogram | `<name>_bucket{le}`, `<name>_gsum`, `<name>_gcount` — gauges |
+| summary | `<name>{quantile}` — gauges; `<name>_sum`, `<name>_count` — counters |
+
+So `histogram_quantile(0.99, rate(sql_service_latency_bucket[1m]))` works over
+a scraped exporter as over any Prometheus. The scrape asks for the text
+exposition; native (sparse) histograms exist only in the protobuf one, so an
+exporter's classic buckets are what ships, and a native-only histogram ships
+its `_sum`, `_count` and the `+Inf` bucket. A NaN or infinite value — a
+summary quantile before its first observation — is not a reading and is left
+out. A failing endpoint is a warning in the record's log once per distinct
+failure, not every step. The beat's own `docker.container.cpu.percent` and
+`docker.container.memory.bytes` are gauges of its moment.
 
 ### Logs and the container's last words
 
