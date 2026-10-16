@@ -65,6 +65,7 @@ Flow описывает топологию, но не настраивает с�
 | `activity.ActivityAll` | выполнить параллельно на snapshot |
 | `WithGuarantee` | `AtLeastOnce` или `AtMostOnce` |
 | `WithTimeout`, `WithHeartbeat` | ограничить выполнение и обнаружить потерю |
+| `WithMaxAttempts` | ограничить выполнения at-least-once вызова; тело само прекращает повторы через `temporal.NewNonRetryableApplicationError` |
 | `NewArtifact` | опубликовать `FromBytes` или `FromAgentFile` |
 | `AttachArtifact` | прочитать чужую запись артефакта |
 

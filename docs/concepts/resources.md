@@ -78,9 +78,14 @@ flowchart TD
 ```
 
 Deleting an owner deletes its whole subtree, deepest first: the vm
-before the subnet, the subnet before the network. A cancelled or
-crashed run is a death like any other — its subtree goes down the same
-road.
+before the subnet, the subnet before the network. Siblings — records
+under one owner — go down together: four vms under one subnet take the
+time of one. A dependency between records is an ownership edge; two
+records that must not be deleted at once belong one under the other.
+A cancelled or crashed run is a death like any other — its subtree goes
+down the same road, and the run closes as soon as its subtree is gone:
+a machine executor whose agent no longer answers (its vm deleted a
+moment ago) is collected later and does not hold the run.
 
 Two principles hold everywhere:
 

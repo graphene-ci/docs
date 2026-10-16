@@ -65,6 +65,7 @@ Every action has an execution guarantee:
 pipelineactivity.Activity(ctx, agent, call,
 	pipelineactivity.WithGuarantee(pipelineactivity.AtMostOnce),
 	pipelineactivity.WithTimeout(5*time.Minute),   // bounds one execution (default 10m)
+	pipelineactivity.WithMaxAttempts(3),            // at-least-once: give up after 3 executions (default: unbounded)
 	pipelineactivity.WithHeartbeat(30*time.Second), // "still running" vs "died"
 )
 ```

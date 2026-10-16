@@ -65,6 +65,7 @@ installReports, err := pipelineactivity.ActivityAll(ctx, edges, dockerlib.Instal
 pipelineactivity.Activity(ctx, agent, call,
 	pipelineactivity.WithGuarantee(pipelineactivity.AtMostOnce),
 	pipelineactivity.WithTimeout(5*time.Minute),   // граница одного выполнения (по умолчанию 10m)
+	pipelineactivity.WithMaxAttempts(3),            // at-least-once: сдаться после 3 выполнений (по умолчанию без предела)
 	pipelineactivity.WithHeartbeat(30*time.Second), // «ещё работает» vs «умер»
 )
 ```

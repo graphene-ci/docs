@@ -54,13 +54,25 @@ status written by the cluster or provider.
 | `WithReconcileEvery(d)` | 30s | drift-check period |
 | `WithPollInterval(d)` | 5s | readiness polling period |
 | `WithTimeout(d)` | 20m | maximum convergence wait |
+| `WithFailed(fn)` | none | a non-nil error ends the declaration at once — broken for good |
 | `WithResourceOption(...)` | run ownership | parent, children, labels and flows |
 
 The first declaration of a Go kind fixes its handlers for that worker. Keep the
 same options for subsequent instances.
 
 Crossplane managed resources often have no conditions immediately after apply;
-provide `WithReady` for the provider's real readiness signal. Prefer native
+provide `WithReady` for the provider's real readiness signal.
+
+What the controller says reaches a person while the object converges: each
+change of `status.conditions` is a `conditions` event of the record and a log
+line — a warning when a condition is `False` with a reason, for example
+`Synced=False (ReconcileError: Quota limit compute.ssdDisks.size exceeded)`.
+A declaration that fails — the timeout, or `WithFailed` returning an error on
+an observation — carries the last observed conditions in its error and is not
+retried: declaring again would create the object anew and wait out the same
+refusal. Use `WithFailed` for refusals that will not change, such as quota or
+permission. The apply and observe calls of a converging object give up after
+ten failed attempts in a row. Prefer native
 reference fields between Kubernetes objects: the cluster resolves them without
 moving generated ids through workflow history.
 

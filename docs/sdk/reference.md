@@ -65,6 +65,7 @@ selection is also foreign and does not follow future matching agents.
 | `activity.ActivityAll` | execute concurrently on a snapshot |
 | `WithGuarantee` | `AtLeastOnce` or `AtMostOnce` |
 | `WithTimeout`, `WithHeartbeat` | bound execution and detect loss |
+| `WithMaxAttempts` | bound the executions of an at-least-once call; a body ends retries itself with `temporal.NewNonRetryableApplicationError` |
 | `NewArtifact` | publish `FromBytes` or `FromAgentFile` |
 | `AttachArtifact` | read a foreign artifact record |
 

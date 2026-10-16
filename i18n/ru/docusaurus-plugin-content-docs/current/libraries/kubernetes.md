@@ -54,13 +54,24 @@ status, который записал кластер или provider.
 | `WithReconcileEvery(d)` | 30s | период проверки drift |
 | `WithPollInterval(d)` | 5s | период опроса readiness |
 | `WithTimeout(d)` | 20m | предел ожидания convergence |
+| `WithFailed(fn)` | нет | ненулевая ошибка завершает декларацию сразу — сломано окончательно |
 | `WithResourceOption(...)` | владелец run | parent, children, labels и flows |
 
 Первая декларация Go kind фиксирует handlers этого worker. Для следующих
 экземпляров используйте те же опции.
 
 Сразу после apply у managed resources Crossplane часто нет conditions;
-задавайте `WithReady` по реальному сигналу provider. Для связей Kubernetes
+задавайте `WithReady` по реальному сигналу provider.
+
+Что говорит контроллер, видно, пока объект сходится: каждое изменение
+`status.conditions` — событие `conditions` записи и строка лога (warning, если
+condition `False` с причиной, например
+`Synced=False (ReconcileError: Quota limit compute.ssdDisks.size exceeded)`).
+Упавшая декларация — по таймауту или по ошибке `WithFailed` на наблюдении —
+несёт последние conditions в своей ошибке и не повторяется: повтор создал бы
+объект заново и прождал бы тот же отказ. `WithFailed` — для отказов, которые
+не изменятся: квота, права. Apply и observe сходящегося объекта сдаются после
+десяти неудач подряд. Для связей Kubernetes
 objects предпочитайте нативные reference fields: кластер разрешит их без
 переноса сгенерированных ids через workflow history.
 
