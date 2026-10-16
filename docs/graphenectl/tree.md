@@ -23,7 +23,9 @@ of the roots — it is [`kinds`](lifecycle.md#kinds).
 The tree of a **run is always whole**: a finished run is history, and
 its topology after the teardown is what one comes to see — the machines
 and containers show with `phase: deleted`, as far back as the
-namespace's retention keeps their history.
+namespace's retention keeps their history. Each record is one node — its
+live execution, or the one that ended its life — however many times its
+history was continued.
 
 ```console
 $ graphenectl tree run/nightly-0917

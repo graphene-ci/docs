@@ -85,7 +85,11 @@ records that must not be deleted at once belong one under the other.
 A cancelled or crashed run is a death like any other — its subtree goes
 down the same road, and the run closes as soon as its subtree is gone:
 a machine executor whose agent no longer answers (its vm deleted a
-moment ago) is collected later and does not hold the run.
+moment ago) is collected later and does not hold the run. A record whose
+declaration FAILED is closed, but what was declared under it is not: a
+run's teardown walks the run's closed records as well and takes down
+everything still alive under them — machines under a network the cloud
+refused are not left running.
 
 Two principles hold everywhere:
 

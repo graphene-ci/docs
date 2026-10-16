@@ -70,7 +70,12 @@ line — a warning when a condition is `False` with a reason, for example
 A declaration that fails — the timeout, or `WithFailed` returning an error on
 an observation — carries the last observed conditions in its error and is not
 retried: declaring again would create the object anew and wait out the same
-refusal. Use `WithFailed` for refusals that will not change, such as quota or
+refusal. A failed declaration takes its object out of the cluster before its
+record closes, and waits up to ten minutes for it to be gone: a controller left
+with the object would finish creating it once the cloud allowed — a network
+refused for quota appearing an hour later, with nothing to delete it. An
+object that does not go away in time is said on the record: a warning and an
+`orphaned` event. Use `WithFailed` for refusals that will not change, such as quota or
 permission. The apply and observe calls of a converging object give up after
 ten failed attempts in a row. Prefer native
 reference fields between Kubernetes objects: the cluster resolves them without

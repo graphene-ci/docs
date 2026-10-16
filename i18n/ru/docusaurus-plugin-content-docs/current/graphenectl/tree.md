@@ -23,7 +23,9 @@ graphenectl tree [owner-ref] [--include-deleted] [--flows]
 Дерево **прогона всегда полное**: завершённый прогон — история, и его
 топология после сноса — ровно то, ради чего сюда приходят: машины и
 контейнеры показаны с `phase: deleted`, настолько назад, насколько
-retention namespace хранит их history.
+retention namespace хранит их history. Каждая запись — один узел: её живое
+исполнение или то, которым кончилась её жизнь, сколько бы раз её history
+ни продолжалась.
 
 ```console
 $ graphenectl tree run/nightly-0917
