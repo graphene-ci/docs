@@ -82,8 +82,9 @@ logs for backend response codes and confirm time ranges and entity reference.
 ## The door stalls
 
 When every agent and executor times out at once, take the server's goroutine
-dump while it happens. The profiles are on the HTTP door, for an administrator's
-token:
+dump while it happens. The profiles are on the HTTP door, for an
+installation-wide administrator (a token for namespace `*`); a profile spans
+every tenant, so a namespace's admin is refused:
 
 ```console
 $ curl -H "Authorization: Bearer $ADMIN_TOKEN" \

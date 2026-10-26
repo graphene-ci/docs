@@ -33,8 +33,9 @@ rule or object-level ACL. Subjects are `user:<name>`, `group:<name>`, and
 Roles and bindings are records read into one installation-wide snapshot,
 refreshed at most every five seconds: a revoked right can outlive its record
 by that long. When the refresh cannot read the records — Temporal shedding
-load — the last snapshot keeps answering; a caller is refused for lack of
-records only before the first snapshot is read.
+load — the last snapshot keeps answering for up to a minute. Past that, or
+before the first snapshot is read, every caller is refused: a store that stays
+unreadable does not keep revoked rights alive.
 
 Verbs are `get`, `list`, `watch`, `create`, `update`, `delete`, `transfer`,
 `invoke`, `run`, `build`, and `activate`. Unknown verbs and kinds are rejected
