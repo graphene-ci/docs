@@ -79,6 +79,19 @@ State and events may still work because they come from Temporal. For dimensions
 accepts and drops the signal. Query the record with `-f`; then inspect server
 logs for backend response codes and confirm time ranges and entity reference.
 
+## The door stalls
+
+When every agent and executor times out at once, take the server's goroutine
+dump while it happens. The profiles are on the HTTP door, for an administrator's
+token:
+
+```console
+$ curl -H "Authorization: Bearer $ADMIN_TOKEN" \
+    https://graphene.example/debug/pprof/goroutine?debug=2 > goroutines.txt
+```
+
+`/debug/pprof/` lists the rest (heap, profile, trace).
+
 ## Deletion does not finish
 
 Deletion finalizes children first. Use `tree` and inspect the first child still

@@ -30,6 +30,12 @@ A permission is `verb × kind × namespace`. Rules are additive; there is no den
 rule or object-level ACL. Subjects are `user:<name>`, `group:<name>`, and
 `sa:<name>`. Bindings grant one role in one namespace or `*`.
 
+Roles and bindings are records read into one installation-wide snapshot,
+refreshed at most every five seconds: a revoked right can outlive its record
+by that long. When the refresh cannot read the records — Temporal shedding
+load — the last snapshot keeps answering; a caller is refused for lack of
+records only before the first snapshot is read.
+
 Verbs are `get`, `list`, `watch`, `create`, `update`, `delete`, `transfer`,
 `invoke`, `run`, `build`, and `activate`. Unknown verbs and kinds are rejected
 when a role is written.

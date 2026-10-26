@@ -137,6 +137,12 @@ language.
 and drops that signal. Query URLs are read-side backends used by Observe API:
 PromQL-compatible metrics, LogsQL-compatible logs and Jaeger-compatible traces.
 
+An export is answered as soon as its payload is queued; sixteen senders post the
+queue to the ingest URLs, each post bounded to ten seconds. A slow backend costs
+queued payloads, not exporters' calls: when 4096 payloads are waiting, the next
+ones are dropped, the server warns once a minute and reports the total as
+`graphene.otlp.dropped.total`.
+
 The server does not verify that ingest and query endpoints describe the same
 backend. Check them with [observability commands](../graphenectl/observe.md).
 

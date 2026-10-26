@@ -79,6 +79,19 @@ State и events могут работать, потому что приходя�
 сигнал. Запустите запрос записи с `-f`, затем посмотрите response codes бекенда
 в логах сервера, time range и точную entity reference.
 
+## Door встаёт
+
+Когда все агенты и executors разом получают таймауты, снимите дамп горутин
+сервера в этот момент. Профили лежат на HTTP door и доступны токену
+администратора:
+
+```console
+$ curl -H "Authorization: Bearer $ADMIN_TOKEN" \
+    https://graphene.example/debug/pprof/goroutine?debug=2 > goroutines.txt
+```
+
+`/debug/pprof/` перечисляет остальные (heap, profile, trace).
+
 ## Не завершается deletion
 
 Удаление финализирует детей первыми. Через `tree` найдите первого child в

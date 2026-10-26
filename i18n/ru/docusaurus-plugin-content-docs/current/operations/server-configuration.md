@@ -135,6 +135,12 @@ toolchain умеет собрать бинарь, но не создаёт SDK G
 принимает и теряет этот сигнал. Query URLs — read-side бекенды Observe API:
 PromQL-compatible metrics, LogsQL-compatible logs и Jaeger-compatible traces.
 
+Экспорт получает ответ, как только его payload встал в очередь; шестнадцать
+отправителей разбирают очередь в ingest URLs, каждая отправка ограничена десятью
+секундами. Медленный backend стоит payload'ов в очереди, а не вызовов
+экспортёров: когда ждут 4096 payload'ов, следующие отбрасываются, сервер
+предупреждает раз в минуту и отдаёт счётчик `graphene.otlp.dropped.total`.
+
 Сервер не доказывает, что ingest и query endpoints относятся к одному backend.
 Проверяйте их [командами наблюдаемости](../graphenectl/observe.md).
 
