@@ -97,6 +97,20 @@ restarting — is picked up from the last line shipped, with no line twice and
 none missed. When a container stops on its own, the stop is in the record's
 history (`container-exited` with the exit code) the moment its log ends.
 
+A line's severity is the level it names itself, not the stream it came on —
+plenty of tools log ordinary progress to stderr (PostgreSQL writes everything
+there), and pytest prints its failures to stdout:
+
+| Line | Read from |
+|---|---|
+| JSON object | its `level`, `severity`, `lvl` or `L` field (zap, logrus, slog); pino's numbers (50 and up — error, 40 — warn) |
+| logfmt | `level=`, `lvl=`, `severity=` |
+| text | glog/klog's leading `E1027` / CockroachDB's `E261027`; among the first six words, a level in brackets (`[ERROR]`, MySQL's `[Warning]` / `[Note]`) or in capitals, alone or before a colon (PostgreSQL's `ERROR:`, `LOG:`) |
+
+`fatal`, `panic` and `critical` are recorded as errors; `notice`, `note`,
+`log` and `system` as info. A lowercase word in a sentence (`query error:`)
+is prose, not a level. A line that names no level is info.
+
 Before a container is removed it is retired: a last stats and scrape sample,
 then `docker stop` with a 10-second grace — SIGTERM, so the process flushes
 what it buffers (an OpenTelemetry SDK's last spans and metrics, a database's
@@ -158,10 +172,10 @@ Every output line is also a log record of the run (`graphenectl logs run <id>`),
 stamped with the job's name and the `stream` it came from. Stdout and stderr
 assemble their lines separately, so an unfinished line of one never splices
 into the other; the log file and `Tail` stay the merged output as Docker
-delivered it. The stream is **not** a severity — plenty of tools log ordinary
-progress to stderr, and pytest prints its failures to stdout — so every line is
-recorded at the same level. What does carry a severity is the job's own word: a
-non-zero exit adds one **warning** record, `job <name> exited with status <n>`.
+delivered it. Each line is recorded at the level it names, read as for a
+[container's log](#logs-and-the-containers-last-words). The exit has no line of
+its own: a non-zero exit adds one **warning** record,
+`job <name> exited with status <n>`.
 
 The job replaces a leftover container of the same name and removes its own
 container on every exit path, cancellation included; `AutoRemove` is cleared so
