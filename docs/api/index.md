@@ -15,6 +15,35 @@ The contract currently contains nine services and 34 methods, summarized in
 [Methods](management.md). Transport, authentication, errors and stream rules
 are in [Protocol](protocol.md).
 
+## TypeScript client
+
+Every server release publishes `@graphene-ci/management-api` of the same
+version to GitHub Packages. GitHub Packages requires a token with
+`read:packages` even for public packages:
+
+```ini
+# .npmrc
+@graphene-ci:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
+```
+
+```ts
+import { createConnectTransport } from '@connectrpc/connect-web' // or connect-node
+import { authInterceptor, createGrapheneClient } from '@graphene-ci/management-api'
+
+const api = createGrapheneClient(
+  createConnectTransport({
+    baseUrl: 'https://graphene.example.com',
+    interceptors: [authInterceptor(() => ({ token, namespace: 'team-a' }))],
+  }),
+)
+const info = await api.namespaces.serverInfo({})
+```
+
+`authInterceptor` sends both request-context headers on every call; a header
+passed to a single call takes precedence. Messages and services are imported
+from `@graphene-ci/management-api/v1/<file>`, for example `.../v1/runs`.
+
 ## Request context
 
 Every request sends:
@@ -44,7 +73,8 @@ custom client.
 
 ## Compatibility
 
-Generated code is committed in the server and Studio repositories. There is no
-published cross-version compatibility window yet; generate clients from the
-target server revision and test them together. See
+Generated code is committed in the server repository, and the TypeScript
+package carries the server version. There is no published cross-version
+compatibility window yet; use the client of the target server version and test
+them together. See
 [Compatibility](../operations/compatibility.md).

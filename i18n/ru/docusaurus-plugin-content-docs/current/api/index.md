@@ -15,6 +15,36 @@ CLI. Сейчас контракт содержит девять services и 34 
 [Методах](management.md). Transport, authentication, errors и streams описаны
 в [Протоколе](protocol.md).
 
+## TypeScript-клиент
+
+Каждый релиз сервера публикует в GitHub Packages пакет
+`@graphene-ci/management-api` той же версии. GitHub Packages требует токен с
+`read:packages` даже для публичных пакетов:
+
+```ini
+# .npmrc
+@graphene-ci:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
+```
+
+```ts
+import { createConnectTransport } from '@connectrpc/connect-web' // или connect-node
+import { authInterceptor, createGrapheneClient } from '@graphene-ci/management-api'
+
+const api = createGrapheneClient(
+  createConnectTransport({
+    baseUrl: 'https://graphene.example.com',
+    interceptors: [authInterceptor(() => ({ token, namespace: 'team-a' }))],
+  }),
+)
+const info = await api.namespaces.serverInfo({})
+```
+
+`authInterceptor` ставит оба заголовка контекста запроса на каждый вызов;
+заголовок, переданный в отдельный вызов, главнее. Сообщения и сервисы
+импортируются из `@graphene-ci/management-api/v1/<файл>`, например
+`.../v1/runs`.
+
 ## Контекст запроса
 
 Каждый запрос передаёт:
@@ -43,6 +73,6 @@ bytes, streams, значения секрета или токена и данн�
 
 ## Совместимость
 
-Generated code коммитится в репозиториях server и Studio. Опубликованного
-cross-version окна пока нет; генерируйте clients от ревизии целевого сервера и
-тестируйте вместе. См. [Совместимость](../operations/compatibility.md).
+Generated code коммитится в репозитории сервера, а TypeScript-пакет несёт
+версию сервера. Опубликованного cross-version окна пока нет; берите client
+версии целевого сервера и тестируйте вместе. См. [Совместимость](../operations/compatibility.md).
