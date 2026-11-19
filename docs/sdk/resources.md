@@ -86,5 +86,37 @@ Ownership transfer emits activity heartbeats while waiting for the resource
 entity, including during creation. Cancellation and activity deadlines still
 bound the wait, and command errors propagate to the caller.
 
+### Named stands
+
+A run creates only its own pipeline's stand. A stand that several pipelines
+or runs share is a **named stand**: applied as a record, with its own owner and
+lifetime, then targeted with `OnStand`:
+
+```yaml
+# stand.yaml — graphenectl apply -f stand.yaml
+kind: stand
+id: tpcc-lab
+spec:
+  owner: pipeline/stroppy-stand   # or empty: the namespace owns it
+  ttl: 168h                       # empty: lives until deleted
+  idleTimeout: 72h                # empty: never idles out
+```
+
+```go
+pipeline.ToStand(ctx, vm, pipeline.OnStand("tpcc-lab"))
+```
+
+A stand that was never applied, or is being deleted, refuses the transfer with
+`stand_missing` before the resource changes hands. When the stand's TTL or idle
+timeout runs out, the stand deletes itself and releases everything it holds.
+`set-ttl` and `set-idle` change both later; every command on the stand counts as
+use:
+
+```bash
+graphenectl invoke stand tpcc-lab set-ttl --data '{"ttl":"336h"}'
+graphenectl invoke stand tpcc-lab set-idle --data '{}'     # never idle out
+graphenectl invoke stand tpcc-lab release --data '{"ref":"yc.vm/db-2"}'
+```
+
 Ready-to-use implementations are documented in
 [Resource libraries](../libraries/index.md).

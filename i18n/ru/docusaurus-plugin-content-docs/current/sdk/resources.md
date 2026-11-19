@@ -83,5 +83,36 @@ pipeline.ToStand(ctx, reportArtifact)                    // живёт до яв
 включая создание. Отмена и deadline activity ограничивают ожидание, ошибки
 команды возвращаются вызывающему.
 
+### Именованные стенды
+
+Ран создаёт только стенд своего пайплайна. Стенд, общий для нескольких
+пайплайнов или ранов, — **именованный**: он применяется как запись со своим
+владельцем и временем жизни, а передаётся в него через `OnStand`:
+
+```yaml
+# stand.yaml — graphenectl apply -f stand.yaml
+kind: stand
+id: tpcc-lab
+spec:
+  owner: pipeline/stroppy-stand   # или пусто: владелец — namespace
+  ttl: 168h                       # пусто: живёт до удаления
+  idleTimeout: 72h                # пусто: не истекает по простою
+```
+
+```go
+pipeline.ToStand(ctx, vm, pipeline.OnStand("tpcc-lab"))
+```
+
+Стенд, который не применяли или который удаляется, отказывает в передаче с
+`stand_missing` до смены владельца ресурса. Когда истекает TTL стенда или его
+простой, стенд удаляет себя и отпускает всё, что держит. `set-ttl` и `set-idle`
+меняют их позже; любая команда стенду считается использованием:
+
+```bash
+graphenectl invoke stand tpcc-lab set-ttl --data '{"ttl":"336h"}'
+graphenectl invoke stand tpcc-lab set-idle --data '{}'     # не истекать по простою
+graphenectl invoke stand tpcc-lab release --data '{"ref":"yc.vm/db-2"}'
+```
+
 Готовые реализации описаны в разделе
 [Библиотеки ресурсов](../libraries/index.md).
