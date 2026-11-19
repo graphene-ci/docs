@@ -109,6 +109,25 @@ graphenectl invoke agent db-1 clear-leaks --data '{"ref":"docker/pg"}'
 graphenectl invoke agent db-1 clear-leaks --data '{}'   # every leak and the overflow
 ```
 
+## Taking the agent off a machine
+
+Deleting an agent record never deletes the machine. What it does to the agent
+process is the record's choice, `pipeline.WithDecommission`:
+
+| Policy | On delete |
+|---|---|
+| none (default) | the agent stays installed: the machine is someone else's to clean, or dies with its stand |
+| `DecommissionBestEffort` | the agent is uninstalled for up to 15 minutes; failing that, the record goes and `agentMayRemain` says so |
+| `DecommissionGuaranteed` | the record stays in deletion until the agent is uninstalled — for machines Graphene does not own |
+
+A connected agent uninstalls itself: it runs the server's uninstall script as a
+detached systemd unit and leaves its session. An offline agent is uninstalled
+over the record's ssh with the same script. The script removes what the install
+put there — the service, the binary, `/etc/graphene-agent`,
+`/var/lib/graphene-agent`, the `graphene-run` account — and leaves a machine
+bound to another agent alone; the `runc` package stays. Once the record is
+deleted, its agent is refused at the door whatever token it still holds.
+
 ## Foreign agents
 
 An agent declared by someone else can be **attached**: recognized and
