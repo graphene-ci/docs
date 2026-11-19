@@ -46,7 +46,7 @@ drift.
 ## Facts: what the machine is
 
 On connect the agent reports the machine's facts onto its record: hostname,
-OS and distribution, CPUs, memory, interfaces with their addresses, and every
+OS, distribution and running kernel release, CPUs, memory, interfaces with their addresses, and every
 physical disk — name, size, rotational, transport, model, serial and its
 `/dev/disk/by-id` names. Virtual devices (loop, zram, device-mapper) are left
 out; what is mounted where is not a fact but a [mount record](../libraries/host.md#disks).
