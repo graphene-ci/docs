@@ -70,6 +70,8 @@ record's path.
   planted where a record writes a file is replaced, not followed, and a
   directory swapped for a symlink fails the record instead of changing the
   link's target.
+- `Dir` needs Linux 5.6 or newer: the kernel itself resolves the directory
+  without symlinks (`openat2`) before its mode and owner change.
 
 An owned agent owns its host records, so they go with the agent. On an attached
 agent they belong to the run and are removed when the run ends, unless
