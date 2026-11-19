@@ -33,6 +33,31 @@ path := data.Ready(ctx).Path // bind-mount it into the database container
 | `Dir(ctx, agent, path, access)` | the directory exists with the given mode and owner | the directory is deleted with its contents |
 | `Unit(ctx, agent, name, content)` | the unit file is in `/etc/systemd/system`, enabled and started | the unit is stopped, disabled and its file deleted |
 | `UnitState(ctx, agent, name, want)` | an existing unit is held `UnitStopped`, `UnitDisabled` or `UnitMasked` | the unit's prior state comes back: unmasked, enabled, started as it was |
+| `Mount(ctx, agent, MountRequest{...})` | the device is mounted at the mountpoint through a systemd mount unit (survives a reboot) | the filesystem is unmounted and the unit deleted; the data stays |
+
+`Unit` is ready only once the unit is active: `systemctl enable --now` exits 0
+even when the start fails, so the record checks. A oneshot service needs
+`RemainAfterExit=yes` to count as running.
+
+## Disks
+
+`Mount` names the device, best by its `/dev/disk/by-id` name: the agent's
+facts list every physical disk with its ids, size, model and serial. With
+`Format: true` it creates the filesystem only on a **blank** device; a
+device carrying anything — another filesystem, a partition table — is refused
+with `host_conflict`, never formatted over. Removal never wipes. On a machine
+someone else prepared, `Check: true` only verifies that the device is mounted
+there with that type, and changes nothing, now or on removal:
+
+```go
+data := hostlib.Mount(ctx, db, hostlib.MountRequest{
+    Device:     "/dev/disk/by-id/nvme-SAMSUNG_MZQL23T8HCLS-00A07_S64HNE0R123456",
+    Mountpoint: "/data",
+    FSType:     "xfs",               // ext4, xfs or btrfs
+    Options:    []string{"noatime"},
+    Format:     true,                // only a blank device
+})
+```
 
 ## Claims
 

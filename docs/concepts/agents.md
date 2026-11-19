@@ -43,6 +43,15 @@ sequenceDiagram
 Both paths run one and the same install script — two scripts would
 drift.
 
+## Facts: what the machine is
+
+On connect the agent reports the machine's facts onto its record: hostname,
+OS and distribution, CPUs, memory, interfaces with their addresses, and every
+physical disk — name, size, rotational, transport, model, serial and its
+`/dev/disk/by-id` names. Virtual devices (loop, zram, device-mapper) are left
+out; what is mounted where is not a fact but a [mount record](../libraries/host.md#disks).
+Facts are what the box is, read at connect: a hardware key, not live state.
+
 ## Capabilities are written, never discovered
 
 What a machine CAN do is written onto its record by a publisher — an
