@@ -118,6 +118,26 @@ graphenectl invoke stand tpcc-lab set-idle --data '{}'     # never idle out
 graphenectl invoke stand tpcc-lab release --data '{"ref":"yc.vm/db-2"}'
 ```
 
+### Keeping a deployment between runs
+
+A library record is named by what it declares (`docker/pg`, a host path), so a
+later run that declares the same name attaches to the live record instead of
+creating a second one. The record keeps the spec it was created with: a
+redeclaration with another spec — another image, another config — is refused
+with `spec_mismatch` instead of silently running the old one. To replace the
+record, delete it (`graphenectl delete docker pg`, which the installation's
+rights govern); the next declaration creates it anew.
+
+A run that must reuse and must not deploy attaches without declaring:
+
+```go
+pg := dockerlib.AttachContainer(ctx, agent, "pg").Ready(ctx)   // never creates
+data := hostlib.AttachDir(ctx, agent, "/data/pg").Ready(ctx)
+```
+
+A name never declared fails with `record_missing`, a failed or departing record
+with `record_gone`. The run does not own what it attaches.
+
 ### One run at a time: the lease
 
 A stand serves one run at a time. A run takes it with `acquire`, before or
