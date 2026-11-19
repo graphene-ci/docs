@@ -118,5 +118,31 @@ graphenectl invoke stand tpcc-lab set-idle --data '{}'     # never idle out
 graphenectl invoke stand tpcc-lab release --data '{"ref":"yc.vm/db-2"}'
 ```
 
+### One run at a time: the lease
+
+A stand serves one run at a time. A run takes it with `acquire`, before or
+after it starts; the run id is the one the run is started with:
+
+```bash
+graphenectl invoke stand tpcc-lab acquire --data '{"run":"tpcc-42"}'
+graphenectl invoke stand tpcc-lab release-lease --data '{"run":"tpcc-42"}'
+```
+
+The lease ends by itself when its run ends. A run that has not started within
+15 minutes of `acquire` loses it. While the stand is leased, nothing leaves it:
+`release`, a delete of the stand or of any record on it, and the stand's own TTL
+and idle timeout all wait for the run. Refusals carry a stable code in an
+`ErrorInfo` (domain `graphene.io`) of a `failed_precondition` answer:
+
+| Code | Meaning |
+|---|---|
+| `busy` | another run holds the lease |
+| `dirty` | an agent on the stand has [leaks](../concepts/agents.md#leaks-a-dirty-machine) |
+| `stand_leased` | the stand is in use; holdings, records and the stand stay |
+| `not_holder` | `release-lease` from a run that does not hold the lease |
+| `stand_missing` | `OnStand` names a stand that was never applied |
+
+Waiting for a busy stand is the caller's queue: `acquire` answers at once.
+
 Ready-to-use implementations are documented in
 [Resource libraries](../libraries/index.md).
