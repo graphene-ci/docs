@@ -66,7 +66,10 @@ record's path.
   installed later starts it while the record lives.
 - An `EnvironmentFile` that a `Unit` names is a [File](file.md) resource.
 - File-system paths stay inside the machine root: a symlink that points outside
-  the machine fails the record instead of letting it write there.
+  the machine fails the record instead of letting it write there. A symlink
+  planted where a record writes a file is replaced, not followed, and a
+  directory swapped for a symlink fails the record instead of changing the
+  link's target.
 
 An owned agent owns its host records, so they go with the agent. On an attached
 agent they belong to the run and are removed when the run ends, unless
