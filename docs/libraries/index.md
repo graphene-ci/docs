@@ -16,6 +16,7 @@ Libraries turn an external system into Graphene's two primitives:
 | [Docker](docker.md) | container, network, volume | install engine, build image |
 | [Kubernetes](kubernetes.md) | any typed Kubernetes object | apply/reconcile/delete inside the resource |
 | [File](file.md) | file on a machine | write/remove inside the resource |
+| [Host](host.md) | sysctl, sysfs attribute, directory, systemd unit, unit state | apply/restore inside the resource |
 | [Git](git.md) | — | install, checkout, ls-remote, tag, commit |
 
 All resource constructors return `pipeline.Resource[T]` and accept the same

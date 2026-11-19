@@ -16,6 +16,7 @@ sidebar_label: Обзор
 | [Docker](docker.md) | container, network, volume | установка engine, сборка image |
 | [Kubernetes](kubernetes.md) | любой типизированный Kubernetes object | apply/reconcile/delete внутри ресурса |
 | [File](file.md) | файл на машине | write/remove внутри ресурса |
+| [Host](host.md) | sysctl, атрибут sysfs, каталог, юнит systemd, состояние юнита | apply/restore внутри ресурса |
 | [Git](git.md) | — | install, checkout, ls-remote, tag, commit |
 
 Все конструкторы ресурсов возвращают `pipeline.Resource[T]` и принимают общие
