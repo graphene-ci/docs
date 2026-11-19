@@ -81,6 +81,25 @@ Agents can be selected without knowing their names: a selector over
 labels and needs returns a snapshot of the matching agents; an action
 addressed to the set executes on every machine of the set.
 
+## Leaks: a dirty machine
+
+A record on a machine — a container, a volume, a file, a host setting —
+removes what it put there when it is deleted. If the removal keeps failing
+(the daemon stays away, a file will not go), the record still lets go, so one
+stuck removal never blocks a cascade. What it left behind is written onto the
+agent record as a **leak**: the record's reference, the error and the time.
+The server takes the record and the machine from the deleting workflow
+itself, never from what the caller claims.
+
+A machine with leaks is dirty. The agent record lists up to 100 leaks; reports
+past that are counted in `leaksOverflow`, never pushing a listed leak out. After
+cleaning the machine, an operator clears one leak or all of them:
+
+```bash
+graphenectl invoke agent db-1 clear-leaks --data '{"ref":"docker/pg"}'
+graphenectl invoke agent db-1 clear-leaks --data '{}'   # every leak and the overflow
+```
+
 ## Foreign agents
 
 An agent declared by someone else can be **attached**: recognized and
