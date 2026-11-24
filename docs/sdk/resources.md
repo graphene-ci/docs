@@ -21,7 +21,8 @@ vmAgent := pipeline.NewAgent(ctx, "edge-1",
 
 // The machine already exists: the system's only touch is the ssh
 // install. The key is a secret NAME; the host key is required —
-// a control plane opening a root shell does not trust-on-first-use.
+// a control plane opening a root shell does not trust-on-first-use
+// unless told to (below).
 bareAgent := pipeline.NewAgentViaSSH(ctx, "bare-1", pipeline.SSHInstall{
 	Address: params.BareHost,
 	User:    params.BareUser,
@@ -29,6 +30,23 @@ bareAgent := pipeline.NewAgentViaSSH(ctx, "bare-1", pipeline.SSHInstall{
 	HostKey: params.BareHostKey,
 }, pipeline.WithLabels(map[string]string{"role": "edge"}))
 ```
+
+A machine whose host key cannot be known beforehand — a provider that installs
+the OS and reports no key — is trusted on first use, explicitly:
+
+```go
+pipeline.NewAgentViaSSH(ctx, "metal-1", pipeline.SSHInstall{
+	Address: params.Host, User: "root",
+	KeyRef:  pipeline.Secret(ctx, "metal-ssh-key"),
+	TrustFirstHostKey: true, // only without HostKey
+})
+```
+
+The key is read over a connection that sends nothing, pinned on the agent record
+(`ssh.hostKey` in its state) and verified by the install and every later ssh use;
+a different key fails with `host_key_mismatch`. An interception of that very
+first connection is not detected — the price of the option, which is why it is
+never the default.
 
 `vmAgent.CloudInit()` renders the identity for a fresh VM's
 user-data — how the agent gets onto a machine the pipeline is about to

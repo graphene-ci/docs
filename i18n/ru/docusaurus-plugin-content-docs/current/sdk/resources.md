@@ -21,7 +21,8 @@ vmAgent := pipeline.NewAgent(ctx, "edge-1",
 
 // Машина уже существует: единственное касание системы — установка
 // по ssh. Ключ — ИМЯ секрета; host key обязателен: control plane,
-// открывающий root-шелл, не работает по trust-on-first-use.
+// открывающий root-шелл, не работает по trust-on-first-use без явной
+// просьбы (ниже).
 bareAgent := pipeline.NewAgentViaSSH(ctx, "bare-1", pipeline.SSHInstall{
 	Address: params.BareHost,
 	User:    params.BareUser,
@@ -29,6 +30,22 @@ bareAgent := pipeline.NewAgentViaSSH(ctx, "bare-1", pipeline.SSHInstall{
 	HostKey: params.BareHostKey,
 }, pipeline.WithLabels(map[string]string{"role": "edge"}))
 ```
+
+Машине, чей host key заранее узнать нельзя (провайдер ставит ОС и ключа не
+отдаёт), доверяют при первом подключении — явно:
+
+```go
+pipeline.NewAgentViaSSH(ctx, "metal-1", pipeline.SSHInstall{
+	Address: params.Host, User: "root",
+	KeyRef:  pipeline.Secret(ctx, "metal-ssh-key"),
+	TrustFirstHostKey: true, // только без HostKey
+})
+```
+
+Ключ читается по соединению, которое ничего не отправляет, закрепляется на
+записи агента (`ssh.hostKey` в её состоянии) и сверяется установкой и любым
+последующим ssh; другой ключ даёт `host_key_mismatch`. Перехват именно первого
+соединения не обнаруживается — это цена опции, поэтому она не по умолчанию.
 
 `vmAgent.CloudInit()` отдаёт identity для user-data свежей VM — так
 агент попадает на машину, которую пайплайн вот-вот создаст:
